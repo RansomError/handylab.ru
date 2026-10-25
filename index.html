@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en" data-theme="auto" data-liquidglass="loading">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101519">
+<title>Handy Labs — Projects, Apps & Glasswave</title>
+<meta name="description" content="Handy Labs: games, apps, experiments and Glasswave, a Liquid Glass music player.">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b1013;
+  --fg: #f1f7f6;
+  --muted: #99aaa9;
+  --subtle: #617270;
+  --glass: rgba(215, 243, 239, .075);
+  --glass-strong: rgba(231, 250, 247, .13);
+  --glass-border: rgba(239, 255, 252, .19);
+  --glass-edge: rgba(255,255,255,.53);
+  --shadow: 0 28px 80px rgba(0,0,0,.28);
+  --accent: #a6ffcd;
+  --accent-2: #75dce5;
+  --accent-ink: #071811;
+  --header: rgba(11,16,19,.52);
+  --control-bg: rgba(255,255,255,.07);
+  --line: rgba(255,255,255,.1);
+  --player-row: rgba(255,255,255,.045);
+  --radius: 28px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #e9eff0;
+  --fg: #152523;
+  --muted: #526965;
+  --subtle: #748983;
+  --glass: rgba(255,255,255,.34);
+  --glass-strong: rgba(255,255,255,.53);
+  --glass-border: rgba(255,255,255,.82);
+  --glass-edge: rgba(255,255,255,.96);
+  --shadow: 0 24px 70px rgba(55,83,79,.15);
+  --accent: #087d60;
+  --accent-2: #0c9da6;
+  --accent-ink: #f4fffb;
+  --header: rgba(236,244,243,.68);
+  --control-bg: rgba(255,255,255,.52);
+  --line: rgba(24,59,52,.12);
+  --player-row: rgba(255,255,255,.32);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    color-scheme: light;
+    --bg: #e9eff0; --fg: #152523; --muted: #526965; --subtle: #748983;
+    --glass: rgba(255,255,255,.34); --glass-strong: rgba(255,255,255,.53);
+    --glass-border: rgba(255,255,255,.82); --glass-edge: rgba(255,255,255,.96);
+    --shadow: 0 24px 70px rgba(55,83,79,.15); --accent: #087d60; --accent-2: #0c9da6;
+    --accent-ink: #f4fffb; --header: rgba(236,244,243,.68); --control-bg: rgba(255,255,255,.52);
+    --line: rgba(24,59,52,.12); --player-row: rgba(255,255,255,.32);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 132px; }
+body { margin: 0; min-height: 100vh; color: var(--fg); background: var(--bg); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; transition: background .45s, color .45s; overflow-x: hidden; }
+body::before, body::after { content:""; position: fixed; pointer-events:none; z-index:-1; border-radius:50%; filter: blur(2px); transition: background .6s; }
+body::before { width: 60vw; height: 60vw; top:-28vw; left:-16vw; background: radial-gradient(circle, rgba(42,185,154,.20), transparent 65%); }
+body::after { width: 64vw; height: 64vw; right:-26vw; top:12vh; background: radial-gradient(circle, rgba(83,112,231,.22), transparent 65%); }
+button, select, input { font: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+button { color: inherit; }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 3px; }
+.wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+.glass { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow), inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 rgba(255,255,255,.045); backdrop-filter: blur(28px) saturate(1.55); -webkit-backdrop-filter: blur(28px) saturate(1.55); }
+.site-header { position: sticky; top: 0; z-index: 50; padding: 14px 0 10px; background: var(--header); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid var(--line); }
+.top-row { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom: 12px; }
+.brand { display:inline-flex; align-items:center; gap:11px; font-weight:820; letter-spacing:-.045em; font-size:20px; white-space:nowrap; }
+.brand-mark { width:38px; height:38px; display:grid; place-items:center; border-radius:13px; color:var(--accent-ink); background:linear-gradient(145deg,var(--accent),var(--accent-2)); box-shadow:0 8px 26px color-mix(in srgb,var(--accent) 23%,transparent), inset 0 1px 0 rgba(255,255,255,.7); }
+.brand-mark svg { width:23px; height:23px; }
+.brand small { display:block; font-size:9px; letter-spacing:.18em; font-weight:740; color:var(--muted); margin-top:2px; }
+.top-actions { display:flex; align-items:center; gap:9px; }
+.glass-select,.mini-btn { border:1px solid var(--glass-border); background:var(--glass); color:var(--fg); border-radius:13px; padding:10px 12px; font-size:12px; font-weight:700; box-shadow:inset 0 1px 0 var(--glass-edge); }
+.glass-select { cursor:pointer; max-width:130px; }
+.mini-btn { cursor:pointer; transition:transform .25s, background .25s; }
+.mini-btn:hover { transform:translateY(-1px); background:var(--glass-strong); }
+.project-scroll { overflow-x:auto; scrollbar-width:none; }
+.project-scroll::-webkit-scrollbar { display:none; }
+.project-picker { --slide:0; position:relative; isolation:isolate; display:grid; grid-template-columns:repeat(5,minmax(110px,1fr)); min-width:620px; gap:0; padding:5px; border-radius:21px; overflow:hidden; background:rgba(127,157,153,.08); border:1px solid var(--glass-border); box-shadow:inset 0 1px 0 var(--glass-edge), 0 7px 30px rgba(0,0,0,.045); }
+.picker-indicator { position:absolute; z-index:0; top:5px; bottom:5px; left:5px; width:calc((100% - 10px)/5); transform:translateX(calc(var(--slide) * 100%)); border-radius:16px; transition:transform .58s cubic-bezier(.18,.82,.22,1); background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(255,255,255,.035)); border:1px solid var(--glass-border); box-shadow:0 9px 26px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.66), inset 0 -1px 0 rgba(255,255,255,.13); backdrop-filter:blur(22px) saturate(1.8); -webkit-backdrop-filter:blur(22px) saturate(1.8); pointer-events:none; }
+:root[data-theme="light"] .picker-indicator { background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,255,255,.28)); box-shadow:0 8px 24px rgba(49,91,82,.1), inset 0 1px 0 #fff; }
+@media (prefers-color-scheme:light) { :root[data-theme="auto"] .picker-indicator { background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,255,255,.28)); box-shadow:0 8px 24px rgba(49,91,82,.1), inset 0 1px 0 #fff; } }
+.project-tab { position:relative; z-index:1; min-height:44px; border:0; background:transparent; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; border-radius:15px; cursor:pointer; color:var(--muted); font-size:12px; font-weight:750; white-space:nowrap; transition:color .25s, transform .25s; }
+.project-tab svg { width:16px; height:16px; flex-shrink:0; opacity:.84; }
+.project-tab:hover { color:var(--fg); transform:translateY(-1px); }
+.project-tab[aria-pressed="true"] { color:var(--fg); }
+.hero { padding:46px 0 38px; }
+.hero-shell { position:relative; isolation:isolate; border-radius:36px; min-height:440px; padding:clamp(28px,5vw,64px); overflow:hidden; display:grid; grid-template-columns:1.08fr .92fr; align-items:center; gap:36px; }
+.hero-shell::before { content:""; position:absolute; z-index:-1; inset:-1px; opacity:.96; background:radial-gradient(ellipse at 80% 25%, color-mix(in srgb,var(--hero-c2) 42%, transparent), transparent 44%), radial-gradient(ellipse at 65% 92%, color-mix(in srgb,var(--hero-c1) 26%, transparent), transparent 52%), linear-gradient(135deg,var(--glass-strong),transparent 72%); }
+html[data-project="glasswave"] { --hero-c1:#49e6a6; --hero-c2:#56c8eb; }
+html[data-project="v8v"] { --hero-c1:#df486b; --hero-c2:#5c62cb; }
+html[data-project="vortex"] { --hero-c1:#8d7cff; --hero-c2:#48dbc8; }
+html[data-project="releases"] { --hero-c1:#8bcfba; --hero-c2:#8197ef; }
+html[data-project="overview"] { --hero-c1:#50e1b2; --hero-c2:#7389ef; }
+.hero-copy { position:relative; z-index:2; max-width:570px; animation:heroIn .48s cubic-bezier(.2,.8,.2,1) both; }
+.eyebrow { display:inline-flex; align-items:center; gap:9px; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.17em; font-weight:820; }
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent), 0 0 16px var(--accent); }
+h1 { font-size:clamp(39px,5.4vw,70px); line-height:.99; letter-spacing:-.065em; margin:23px 0 20px; font-weight:780; max-width:670px; }
+.gradient-text { color:transparent; background:linear-gradient(105deg,var(--accent),var(--accent-2) 50%,#9e99ff); background-clip:text; -webkit-background-clip:text; }
+.hero-description { color:var(--muted); font-size:clamp(14px,1.5vw,17px); line-height:1.8; max-width:530px; margin:0; }
+.hero-actions { display:flex; gap:11px; flex-wrap:wrap; margin-top:29px; }
+.btn { min-height:45px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; gap:9px; border-radius:15px; border:1px solid var(--glass-border); font-size:12px; font-weight:800; cursor:pointer; transition:transform .24s, box-shadow .24s, background .24s; }
+.btn:hover { transform:translateY(-2px); }
+.btn-primary { color:var(--accent-ink); border-color:transparent; background:linear-gradient(110deg,var(--accent),var(--accent-2)); box-shadow:0 9px 26px color-mix(in srgb,var(--accent) 19%,transparent),inset 0 1px 0 rgba(255,255,255,.55); }
+.btn-secondary { background:var(--glass); color:var(--fg); box-shadow:inset 0 1px 0 var(--glass-edge); }
+.btn svg { width:16px; height:16px; }
+.hero-note { display:flex; gap:8px; align-items:center; color:var(--subtle); font-size:11px; margin-top:20px; }
+.hero-visual { min-height:320px; position:relative; display:grid; place-items:center; perspective:1000px; animation:visualIn .7s .08s cubic-bezier(.2,.8,.2,1) both; }
+.orbit { position:absolute; border:1px solid color-mix(in srgb,var(--hero-c2) 32%,transparent); border-radius:50%; width:310px; height:310px; transform:rotate(-18deg) scaleY(.55); box-shadow:0 0 45px color-mix(in srgb,var(--hero-c1) 10%,transparent); animation:orbit 12s linear infinite; }
+.orbit.two { width:390px; height:390px; transform:rotate(40deg) scaleY(.45); border-style:dashed; animation-direction:reverse; opacity:.6; }
+.orb { position:absolute; border-radius:50%; filter:blur(.1px); box-shadow:inset -13px -19px 28px rgba(0,0,0,.25), inset 7px 9px 18px rgba(255,255,255,.68), 0 25px 50px rgba(0,0,0,.14); animation:float 7s ease-in-out infinite; }
+.orb-a { width:100px;height:100px;top:8%;right:8%;background:radial-gradient(circle at 28% 25%,#e6ffed,#4bd7b1 38%,#246f83); }
+.orb-b { width:62px;height:62px;bottom:9%;left:5%;background:radial-gradient(circle at 25% 22%,#e5edff,#8196ff 45%,#4a3d9e);animation-delay:-2.5s; }
+.project-glass-card { position:relative; isolation:isolate; width:min(360px,90%); min-height:235px; padding:23px; border-radius:30px; border:1px solid rgba(255,255,255,.68); background:linear-gradient(133deg,rgba(255,255,255,.23),rgba(220,245,247,.045) 45%,rgba(255,255,255,.13)); box-shadow:0 28px 75px rgba(0,0,0,.2),inset 0 1.5px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(255,255,255,.3); backdrop-filter:blur(36px) saturate(1.85); -webkit-backdrop-filter:blur(36px) saturate(1.85); transform:rotateY(-8deg) rotateX(4deg); transition:transform .55s cubic-bezier(.2,.8,.2,1), border-radius .4s; }
+.project-glass-card:hover { transform:rotateY(0) rotateX(0) translateY(-5px); }
+.card-topline { display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:rgba(255,255,255,.9); text-shadow:0 1px 7px rgba(0,0,0,.22); }
+.status-pill { border:1px solid rgba(255,255,255,.42); background:rgba(255,255,255,.16); border-radius:999px; padding:6px 9px; letter-spacing:.04em; }
+.card-art { position:relative; min-height:115px; display:grid; place-items:center; margin:12px 0; }
+.art-logo { width:88px;height:88px; display:grid;place-items:center; border-radius:28px; color:#effff6; font-size:23px;font-weight:900;letter-spacing:-.08em; background:linear-gradient(145deg,color-mix(in srgb,var(--hero-c1) 77%,white),color-mix(in srgb,var(--hero-c2) 83%,#111)); box-shadow:0 16px 36px color-mix(in srgb,var(--hero-c1) 25%,transparent),inset 0 1px 0 rgba(255,255,255,.8); transform:rotate(-7deg); }
+.wave { display:flex; align-items:center; justify-content:center; gap:5px; height:95px; }
+.wave i { display:block; width:5px; height:var(--h); border-radius:8px; background:linear-gradient(to top,#b4a5ff,#b1ffe3); box-shadow:0 0 15px rgba(135,255,210,.35); animation:wave 1.05s ease-in-out infinite alternate; animation-delay:var(--d); }
+.card-bottom { display:flex; justify-content:space-between; align-items:end; gap:15px; padding-top:14px; border-top:1px solid rgba(255,255,255,.32); color:rgba(255,255,255,.93); }
+.card-bottom strong { display:block; font-size:14px; letter-spacing:-.02em; }
+.card-bottom span { display:block; font-size:10px; margin-top:4px; color:rgba(255,255,255,.68); }
+.card-mark { width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);font-size:17px; }
+.section { padding:52px 0; }
+.section-heading { display:flex; align-items:end; justify-content:space-between; gap:30px; margin-bottom:26px; }
+.kicker { color:var(--muted); text-transform:uppercase; letter-spacing:.17em; font-weight:820; font-size:10px; }
+h2 { margin:12px 0 0; font-size:clamp(29px,3.7vw,44px); line-height:1.08; letter-spacing:-.055em; }
+.section-lead { max-width:425px; color:var(--muted); font-size:13px; line-height:1.8; margin:0 0 3px; }
+.projects-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.project-card { position:relative; padding:23px; min-height:265px; border-radius:25px; overflow:hidden; transition:transform .3s,border-color .3s,background .3s; }
+.project-card:hover { transform:translateY(-5px); border-color:color-mix(in srgb,var(--accent) 38%,var(--glass-border)); }
+.project-card::after { content:""; position:absolute; width:180px;height:180px;right:-80px;top:-80px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--card-accent) 26%,transparent),transparent 70%);pointer-events:none; }
+.project-card[data-open-project="glasswave"] { --card-accent:#62edb2; }
+.project-card[data-open-project="v8v"] { --card-accent:#e45f7c; }
+.project-card[data-open-project="vortex"] { --card-accent:#8b83ff; }
+.project-card[data-open-project="releases"] { --card-accent:#7acdd9; }
+.project-card[data-open-project="glasswave"] .project-icon { background:linear-gradient(145deg,#b7ffe0,#49caa6);color:#113a2a; }
+.project-card[data-open-project="v8v"] .project-icon { background:linear-gradient(145deg,#f5b0c3,#b33a62);color:#481224; }
+.project-card[data-open-project="vortex"] .project-icon { background:linear-gradient(145deg,#d5d3ff,#7976e9);color:#1d1b53; }
+.project-card[data-open-project="releases"] .project-icon { background:linear-gradient(145deg,#d9f8fd,#79c2d3);color:#123941; }
+.project-icon { width:49px;height:49px;display:grid;place-items:center;border-radius:17px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 22px rgba(0,0,0,.08); }
+.project-icon svg { width:23px;height:23px; }
+.project-card h3 { position:relative;z-index:1;font-size:19px;letter-spacing:-.04em;margin:25px 0 9px; }
+.project-card p { position:relative;z-index:1;color:var(--muted);font-size:12px;line-height:1.75;margin:0;max-width:340px; }
+.card-footer { position:absolute;left:23px;right:23px;bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1; }
+.tag { color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase; }
+.arrow-btn { width:33px;height:33px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--glass-border);background:var(--glass-strong);cursor:pointer;transition:transform .24s; }
+.arrow-btn:hover { transform:translate(2px,-2px); }
+.glasswave-layout { position:relative;isolation:isolate;display:grid;grid-template-columns:.82fr 1.18fr;gap:17px;align-items:stretch; }
+.glasswave-scene { position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:30px;background:radial-gradient(ellipse at 15% 20%,rgba(84,235,187,.19),transparent 38%),radial-gradient(ellipse at 88% 76%,rgba(130,139,255,.19),transparent 43%),linear-gradient(135deg,rgba(255,255,255,.055),rgba(102,176,179,.035)); }
+.glasswave-intro,.music-player { position:relative;z-index:1; }
+.glasswave-intro { padding:clamp(23px,3vw,34px);border-radius:28px;position:relative;overflow:hidden; }
+.glasswave-intro::before { content:"";position:absolute;width:300px;height:300px;right:-150px;top:-120px;background:radial-gradient(circle,rgba(89,235,179,.23),transparent 70%);pointer-events:none; }
+.glasswave-intro h3 { font-size:28px;line-height:1.08;letter-spacing:-.06em;margin:20px 0 12px; }
+.glasswave-intro p { color:var(--muted);font-size:13px;line-height:1.85;margin:0 0 22px; }
+.local-chip { display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-border);color:var(--muted);font-size:10px;font-weight:750; }
+.music-player { padding:20px;border-radius:28px;min-width:0; }
+.player-head { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px; }
+.player-head strong { font-size:13px; }
+.player-head span { color:var(--muted);font-size:10px; }
+.dropzone { border:1px dashed color-mix(in srgb,var(--accent) 35%,var(--glass-border));background:var(--player-row);border-radius:18px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px; }
+.dropzone p { color:var(--muted);font-size:11px;line-height:1.6;margin:0; }
+.dropzone strong { color:var(--fg);font-size:12px;display:block;margin-bottom:4px; }
+.file-btn { flex-shrink:0;white-space:nowrap; }
+.track-list { display:flex;flex-direction:column;gap:5px;max-height:195px;overflow:auto;margin-bottom:16px;padding-right:3px; }
+.track-row { display:grid;grid-template-columns:37px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;text-align:left;border:1px solid transparent;border-radius:14px;background:var(--player-row);padding:9px 10px;cursor:pointer;transition:background .2s,border .2s; }
+.track-row:hover,.track-row.active { background:var(--glass-strong);border-color:var(--glass-border); }
+.album-art { width:37px;height:37px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(121,236,201,.8),rgba(124,144,249,.8));color:#102b27;font-weight:900; }
+.track-meta { min-width:0; }
+.track-meta strong { display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px; }
+.track-meta span { display:block;color:var(--muted);font-size:10px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.track-duration { color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums; }
+.empty-library { text-align:center;color:var(--muted);font-size:11px;padding:18px 10px;border:1px dashed var(--line);border-radius:15px; }
+.now-playing { display:grid;grid-template-columns:53px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border-radius:18px;background:var(--glass-strong);border:1px solid var(--glass-border); }
+.now-art { height:53px;width:53px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(140deg,#7ef4c4,#8b90fd 65%,#d0b5ff);color:#12332b;box-shadow:inset 0 1px 0 rgba(255,255,255,.75); }
+.now-art svg { width:25px;height:25px; }
+.now-meta { min-width:0; }
+.now-meta strong { display:block;font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden; }
+.now-meta span { display:block;font-size:10px;color:var(--muted);margin-top:4px; }
+.transport { display:flex;align-items:center;gap:7px; }
+.transport button { width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--glass-border);background:var(--glass);border-radius:11px;cursor:pointer; }
+.transport button.primary-play { width:39px;height:39px;color:var(--accent-ink);background:linear-gradient(130deg,var(--accent),var(--accent-2));border:0; }
+.transport svg { width:15px;height:15px;fill:currentColor; }
+.timeline { display:grid;grid-template-columns:38px 1fr 38px;gap:9px;align-items:center;color:var(--muted);font-size:9px;font-variant-numeric:tabular-nums;margin-top:14px; }
+input[type="range"] { width:100%;accent-color:var(--accent);cursor:pointer; }
+.player-bottom { display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:12px;color:var(--muted);font-size:10px; }
+.volume { display:flex;align-items:center;gap:8px;max-width:150px; }
+.volume input { width:80px; }
+.release-panel { display:grid;grid-template-columns:1fr .8fr;gap:30px;align-items:center;padding:clamp(24px,4vw,45px);border-radius:30px;overflow:hidden;position:relative; }
+.release-panel::before { content:"";position:absolute;width:500px;height:500px;left:-230px;bottom:-350px;border-radius:50%;background:radial-gradient(circle,rgba(81,218,177,.12),transparent 70%);pointer-events:none; }
+.release-panel h2 { max-width:550px; }
+.release-copy { max-width:550px;color:var(--muted);font-size:13px;line-height:1.85;margin:15px 0 0; }
+.release-grid { display:grid;grid-template-columns:1fr 1fr;gap:9px;position:relative; }
+.release-item { padding:15px;border-radius:17px;background:var(--glass);border:1px solid var(--glass-border);box-shadow:inset 0 1px 0 var(--glass-edge); }
+.release-item strong { display:block;font-size:11px; }
+.release-item span { display:block;color:var(--muted);font-size:10px;margin-top:6px; }
+.contact-row { display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:27px;border-radius:26px; }
+.contact-row h2 { font-size:27px;margin-top:9px; }
+.contact-links { display:flex;gap:9px;flex-wrap:wrap; }
+.email-link { padding:12px 14px;border:1px solid var(--glass-border);border-radius:14px;background:var(--glass);font-size:11px;font-weight:780;transition:transform .2s,background .2s; }
+.email-link:hover { transform:translateY(-2px);background:var(--glass-strong); }
+.footer { padding:28px 0 34px;border-top:1px solid var(--line);color:var(--muted);font-size:10px; }
+.footer-inner { display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap; }
+.footer-brand { font-weight:800;letter-spacing:-.04em;color:var(--fg); }
+.toast { position:fixed;left:50%;bottom:22px;z-index:100;transform:translate(-50%,20px);opacity:0;pointer-events:none;padding:12px 17px;border:1px solid var(--glass-border);border-radius:15px;background:var(--glass-strong);backdrop-filter:blur(24px);box-shadow:var(--shadow);font-size:12px;color:var(--fg);transition:opacity .25s,transform .25s;max-width:calc(100vw - 28px);text-align:center; }
+.toast.show { opacity:1;transform:translate(-50%,0); }
+@keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)} }
+@keyframes orbit { from{rotate:0deg}to{rotate:360deg} }
+@keyframes wave { from{transform:scaleY(.42);opacity:.65}to{transform:scaleY(1.12);opacity:1} }
+@keyframes heroIn { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+@keyframes visualIn { from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)} }
+@media (max-width:900px) { .hero-shell{grid-template-columns:1fr;gap:14px}.hero-copy{max-width:730px}.hero-visual{min-height:290px}.hero-shell{padding:38px}.projects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.glasswave-layout{grid-template-columns:1fr}.release-panel{grid-template-columns:1fr}.release-grid{max-width:550px;width:100%} }
+@media (max-width:600px) { .wrap{width:min(100% - 24px,1160px)}.site-header{padding-top:9px}.top-row{margin-bottom:9px}.brand{font-size:17px}.brand-mark{width:34px;height:34px}.glass-select{padding:9px 8px;max-width:94px}.mini-btn{padding:9px}.hero{padding:22px 0 18px}.hero-shell{padding:27px 21px;border-radius:27px;min-height:0}.hero-copy h1{font-size:clamp(39px,11vw,54px)}.hero-visual{min-height:260px}.project-glass-card{width:min(335px,95%);min-height:220px;padding:19px}.orbit{width:250px;height:250px}.orbit.two{width:310px;height:310px}.section{padding:34px 0}.section-heading{display:block}.section-lead{margin-top:13px}.projects-grid{grid-template-columns:1fr}.project-card{min-height:228px}.glasswave-layout{gap:12px}.music-player{padding:13px}.dropzone{align-items:flex-start;flex-direction:column}.file-btn{width:100%}.now-playing{grid-template-columns:43px minmax(0,1fr)}.now-art{width:43px;height:43px}.transport{grid-column:1/-1;justify-content:center}.release-grid{grid-template-columns:1fr 1fr}.release-item{padding:12px}.contact-row{padding:21px}.contact-row h2{font-size:24px}.contact-links{width:100%}.email-link{flex:1;overflow-wrap:anywhere;text-align:center;font-size:10px} }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important} }
+/* Regular Glass redesign: transparent panels, colorful light and stronger depth */
+:root {
+  --bg: #0b111b;
+  --fg: #f4f8ff;
+  --muted: #a4b4c9;
+  --subtle: #74869e;
+  --glass: rgba(222, 241, 255, .075);
+  --glass-strong: rgba(233, 247, 255, .135);
+  --glass-border: rgba(238, 249, 255, .24);
+  --glass-edge: rgba(255,255,255,.72);
+  --shadow: 0 28px 86px rgba(0,0,0,.28);
+  --accent: #b4ffdf;
+  --accent-2: #91b4ff;
+  --accent-ink: #0a1c25;
+  --header: rgba(14, 21, 34, .43);
+  --control-bg: rgba(255,255,255,.08);
+  --line: rgba(235,247,255,.14);
+  --player-row: rgba(230,242,255,.055);
+}
+:root[data-theme="light"] {
+  --bg: #eaf2fa;
+  --fg: #17263b;
+  --muted: #556a83;
+  --subtle: #74859a;
+  --glass: rgba(255,255,255,.29);
+  --glass-strong: rgba(255,255,255,.52);
+  --glass-border: rgba(255,255,255,.83);
+  --glass-edge: rgba(255,255,255,.98);
+  --shadow: 0 24px 70px rgba(43,68,103,.15);
+  --accent: #14866f;
+  --accent-2: #536fd7;
+  --accent-ink: #f5fffc;
+  --header: rgba(240,247,255,.66);
+  --control-bg: rgba(255,255,255,.52);
+  --line: rgba(35,66,96,.13);
+  --player-row: rgba(255,255,255,.3);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    --bg: #eaf2fa; --fg: #17263b; --muted: #556a83; --subtle: #74859a;
+    --glass: rgba(255,255,255,.29); --glass-strong: rgba(255,255,255,.52);
+    --glass-border: rgba(255,255,255,.83); --glass-edge: rgba(255,255,255,.98);
+    --shadow: 0 24px 70px rgba(43,68,103,.15); --accent: #14866f; --accent-2: #536fd7;
+    --accent-ink: #f5fffc; --header: rgba(240,247,255,.66); --control-bg: rgba(255,255,255,.52);
+    --line: rgba(35,66,96,.13); --player-row: rgba(255,255,255,.3);
+  }
+}
+body {
+  background-image: radial-gradient(ellipse at 12% 2%, rgba(76,222,190,.15), transparent 37%), radial-gradient(ellipse at 87% 12%, rgba(109,137,255,.19), transparent 34%), radial-gradient(ellipse at 52% 64%, rgba(117,218,237,.07), transparent 48%);
+  background-attachment: fixed;
+}
+.site-header {
+  width: min(1260px, calc(100% - 24px)); margin: 12px auto 0; padding: 12px 0 10px;
+  border: 1px solid var(--glass-border); border-radius: 25px; background: var(--header);
+  box-shadow: 0 12px 40px rgba(0,0,0,.07), inset 0 1px 0 var(--glass-edge);
+}
+.site-header .wrap { width: min(1160px, calc(100% - 28px)); }
+.project-picker {
+  background: linear-gradient(125deg,rgba(226,246,255,.12),rgba(195,220,255,.045) 54%,rgba(255,255,255,.075));
+  border-color: color-mix(in srgb,var(--glass-border) 85%,transparent);
+  box-shadow: 0 12px 32px rgba(0,0,0,.075), inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 rgba(255,255,255,.055);
+}
+.picker-scene { position:absolute; z-index:0; inset:0; pointer-events:none; border-radius:inherit; opacity:.88; background:radial-gradient(ellipse at 18% 5%,rgba(116,255,206,.3),transparent 42%),radial-gradient(ellipse at 82% 100%,rgba(134,151,255,.3),transparent 43%); }
+.picker-indicator { z-index:1; background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(208,235,255,.055) 52%,rgba(255,255,255,.16)); box-shadow:0 10px 28px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(255,255,255,.18); }
+.project-tab { z-index:2; }
+.project-tab[aria-pressed="true"] { text-shadow:0 0 16px color-mix(in srgb,var(--accent) 22%,transparent); }
+.hero { padding-top:38px; padding-bottom:48px; }
+.hero-shell { min-height:490px; border-radius:38px; border-color:color-mix(in srgb,var(--glass-border) 90%,transparent); box-shadow:var(--shadow),inset 0 1px 0 var(--glass-edge),inset 0 -1px 0 rgba(255,255,255,.08); }
+.hero-shell::before { opacity:1; background:radial-gradient(ellipse at 84% 17%,color-mix(in srgb,var(--hero-c2) 47%,transparent),transparent 43%),radial-gradient(ellipse at 63% 94%,color-mix(in srgb,var(--hero-c1) 35%,transparent),transparent 51%),linear-gradient(135deg,var(--glass-strong),rgba(255,255,255,.015) 62%,transparent); }
+.hero-shell::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.17; background-image:radial-gradient(var(--fg) .6px,transparent .7px); background-size:19px 19px; mask-image:linear-gradient(125deg,black,transparent 66%); }
+.hero-copy,.hero-visual { z-index:1; }
+.orbit { width:340px; height:340px; border-color:color-mix(in srgb,var(--hero-c2) 42%,transparent); box-shadow:0 0 70px color-mix(in srgb,var(--hero-c1) 14%,transparent),inset 0 0 45px color-mix(in srgb,var(--hero-c2) 9%,transparent); }
+.orbit.two { width:420px; height:420px; border-color:color-mix(in srgb,var(--hero-c1) 32%,transparent); }
+.orb-a { box-shadow:inset -13px -19px 30px rgba(0,0,0,.23),inset 8px 10px 22px rgba(255,255,255,.82),0 25px 60px rgba(0,0,0,.14),0 0 48px color-mix(in srgb,var(--hero-c1) 24%,transparent); }
+.orb-b { box-shadow:inset -9px -13px 23px rgba(0,0,0,.2),inset 6px 7px 18px rgba(255,255,255,.8),0 20px 44px rgba(0,0,0,.13); }
+.project-glass-card { border-color:rgba(255,255,255,.78); background:linear-gradient(128deg,rgba(255,255,255,.28),rgba(214,239,255,.07) 42%,rgba(255,255,255,.18)); box-shadow:0 32px 80px rgba(0,0,0,.19),inset 0 1.5px 0 rgba(255,255,255,.96),inset 0 -1px 0 rgba(255,255,255,.26),0 0 45px color-mix(in srgb,var(--hero-c2) 10%,transparent); backdrop-filter:blur(30px) saturate(1.95) contrast(1.04); -webkit-backdrop-filter:blur(30px) saturate(1.95) contrast(1.04); }
+.project-glass-card > :not(canvas) { position:relative; z-index:1; }
+.project-glass-card .card-art { overflow:hidden; border-radius:18px; background:linear-gradient(135deg,color-mix(in srgb,var(--hero-c1) 18%,transparent),color-mix(in srgb,var(--hero-c2) 18%,transparent)); }
+.project-glass-card .art-logo { box-shadow:0 18px 43px color-mix(in srgb,var(--hero-c1) 24%,transparent),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -8px 18px rgba(0,0,0,.13); }
+.glass { background:linear-gradient(135deg,var(--glass-strong),var(--glass) 52%,rgba(255,255,255,.025)); border-color:var(--glass-border); box-shadow:var(--shadow),inset 0 1px 0 var(--glass-edge),inset 0 -1px 0 rgba(255,255,255,.055); backdrop-filter:blur(30px) saturate(1.75); -webkit-backdrop-filter:blur(30px) saturate(1.75); }
+.project-card { min-height:278px; border-radius:27px; background:linear-gradient(137deg,var(--glass-strong),var(--glass) 56%,rgba(255,255,255,.02)); box-shadow:inset 0 1px 0 var(--glass-edge),0 15px 42px rgba(0,0,0,.045); }
+.project-card:hover { box-shadow:var(--shadow),inset 0 1px 0 var(--glass-edge); }
+.project-icon { backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.glasswave-layout { padding:7px; border-radius:34px; }
+.glasswave-scene { z-index:0; opacity:.98; background:radial-gradient(ellipse at 12% 10%,rgba(102,255,202,.22),transparent 42%),radial-gradient(ellipse at 92% 92%,rgba(127,151,255,.25),transparent 43%),linear-gradient(135deg,rgba(255,255,255,.08),rgba(95,169,202,.025)); }
+.glasswave-intro,.music-player { border:1px solid var(--glass-border); background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(223,243,255,.045) 55%,rgba(255,255,255,.09)); backdrop-filter:blur(26px) saturate(1.7); -webkit-backdrop-filter:blur(26px) saturate(1.7); box-shadow:0 20px 55px rgba(0,0,0,.075),inset 0 1px 0 var(--glass-edge); }
+.music-player { background:linear-gradient(135deg,rgba(255,255,255,.20),rgba(215,238,255,.06) 58%,rgba(255,255,255,.1)); }
+.dropzone { background:rgba(220,242,255,.045); border-color:color-mix(in srgb,var(--accent-2) 36%,var(--glass-border)); }
+.track-row { background:rgba(230,245,255,.04); }
+.track-row:hover,.track-row.active { background:var(--glass-strong);box-shadow:inset 0 1px 0 var(--glass-edge); }
+.now-playing { background:linear-gradient(125deg,rgba(255,255,255,.17),rgba(221,241,255,.055)); }
+.release-panel { background:radial-gradient(ellipse at 90% 8%,rgba(113,190,255,.15),transparent 38%),radial-gradient(ellipse at 5% 100%,rgba(87,242,190,.12),transparent 42%),linear-gradient(135deg,var(--glass-strong),var(--glass)); }
+.release-item { background:rgba(230,245,255,.065); box-shadow:inset 0 1px 0 var(--glass-edge); }
+.email-link { background:linear-gradient(135deg,var(--glass-strong),var(--glass)); box-shadow:inset 0 1px 0 var(--glass-edge); }
+.btn-primary { background:linear-gradient(110deg,var(--accent),var(--accent-2)); }
+.btn-secondary { background:linear-gradient(135deg,var(--glass-strong),var(--glass)); }
+.toast { background:var(--header); border-color:var(--glass-border); color:var(--fg); }
+@media (prefers-color-scheme: light) { :root[data-theme="auto"] .glass,:root[data-theme="auto"] .project-card,:root[data-theme="auto"] .glasswave-intro,:root[data-theme="auto"] .music-player { box-shadow:0 24px 70px rgba(45,75,109,.12),inset 0 1px 0 rgba(255,255,255,.98); } }
+@media (max-width:600px) { .site-header { width:calc(100% - 14px); margin-top:7px; border-radius:19px; padding-top:8px; } .hero { padding-top:19px; } .hero-shell { min-height:0; padding:25px 19px; border-radius:28px; } .hero-visual { min-height:270px; } .project-glass-card { transform:none; } .project-card { min-height:238px; } }
+/* Single-view project hub: navigation happens only through the glass slider. */
+html { scroll-behavior:auto; }
+body { overflow:hidden; background:var(--bg); }
+body::before, body::after { display:none!important; }
+.site-header { position:relative; padding-bottom:12px; }
+.project-picker { background:linear-gradient(110deg,rgba(130,247,222,.16),rgba(255,255,255,.035) 42%,rgba(148,164,255,.17)); }
+.picker-scene { background:linear-gradient(112deg,rgba(104,245,205,.18),transparent 32%,rgba(134,156,255,.2) 72%,rgba(255,255,255,.05)); }
+.picker-indicator { background:linear-gradient(112deg,rgba(255,255,255,.42),rgba(199,244,255,.12) 46%,rgba(205,203,255,.25)); border-color:rgba(255,255,255,.55); box-shadow:0 8px 26px rgba(74,139,160,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.22); }
+.project-tab[aria-pressed="true"] { color:var(--fg); }
+main { height:calc(100svh - 132px); min-height:0; overflow:hidden; }
+main > .hero, main > .section { display:none!important; }
+main[data-active-project="overview"] > .hero,
+main[data-active-project="v8v"] > .hero,
+main[data-active-project="vortex"] > .hero { display:grid!important; }
+main[data-active-project="glasswave"] > #glasswave,
+main[data-active-project="releases"] > #releases { display:block!important; }
+main > #projects, main > #contact { display:none!important; }
+.hero { height:100%; min-height:0; padding:8px 0 16px; align-items:stretch; }
+.hero-shell { width:100%; height:100%; min-height:0; max-height:100%; padding:clamp(22px,4vw,48px); border-radius:32px; overflow:hidden; }
+.hero-shell::before { background:linear-gradient(112deg,color-mix(in srgb,var(--hero-c1) 20%,transparent),transparent 34%,color-mix(in srgb,var(--hero-c2) 28%,transparent) 78%,rgba(255,255,255,.08)),linear-gradient(135deg,var(--glass-strong),rgba(255,255,255,.015) 74%); }
+.hero-shell::after { display:none; }
+.hero-visual { min-height:0; height:100%; overflow:visible; }
+.hero-visual .orbit,.hero-visual .orb { display:none!important; }
+.hero-glass-scene { position:absolute; inset:8% -4%; z-index:0; pointer-events:none; border-radius:28px; opacity:.88; background:linear-gradient(112deg,transparent 0 7%,color-mix(in srgb,var(--hero-c1) 74%,white) 19%,rgba(218,255,245,.58) 27%,transparent 38%),linear-gradient(26deg,transparent 0 12%,color-mix(in srgb,var(--hero-c2) 88%,white) 47%,rgba(218,230,255,.76) 58%,transparent 76%),linear-gradient(135deg,color-mix(in srgb,var(--hero-c1) 36%,transparent),rgba(255,255,255,.04) 43%,color-mix(in srgb,var(--hero-c2) 36%,transparent)); filter:saturate(1.28); }
+.project-glass-card { z-index:1; width:min(420px,94%); min-height:280px; padding:26px; transform:none; background:linear-gradient(128deg,rgba(255,255,255,.31),rgba(225,246,255,.07) 42%,rgba(255,255,255,.17)); border-color:rgba(255,255,255,.76); box-shadow:0 28px 70px rgba(0,0,0,.16),inset 0 1.5px 0 rgba(255,255,255,.96),inset 0 -1px 0 rgba(255,255,255,.3); }
+.project-glass-card:hover { transform:translateY(-3px); }
+.card-art { min-height:138px; }
+.art-logo { width:100px; height:100px; border-radius:23px; transform:none; }
+.glasswave-scene { border-radius:28px; background:linear-gradient(112deg,rgba(74,232,192,.19),transparent 35%,rgba(133,147,255,.22) 72%,rgba(255,255,255,.045)); }
+#glasswave,#releases { height:100%; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding-top:22px; padding-bottom:20px; }
+#glasswave .section-heading { margin-bottom:16px; }
+.glasswave-layout { min-height:0; padding:0; gap:15px; grid-template-columns:.75fr 1.25fr; }
+.glasswave-intro,.music-player { background:linear-gradient(130deg,rgba(255,255,255,.27),rgba(221,245,255,.075) 48%,rgba(255,255,255,.17)); border-color:var(--glass-border); }
+.glasswave-intro::before { display:none; }
+.glasswave-intro { align-self:stretch; }
+.glass-contact-link { display:inline-flex; margin-top:17px; padding:10px 12px; border-radius:13px; border:1px solid var(--glass-border); background:linear-gradient(120deg,rgba(255,255,255,.22),rgba(184,226,255,.07)); font-size:11px; font-weight:780; color:var(--fg); box-shadow:inset 0 1px 0 var(--glass-edge); }
+.glass-contact-link:hover { border-color:var(--accent-2); }
+#releases .release-panel { min-height:100%; align-content:center; }
+.release-panel::before { display:none; }
+.release-item { background:linear-gradient(125deg,rgba(255,255,255,.22),rgba(220,240,255,.06)); }
+.contact-row { display:none!important; }
+.footer { display:none!important; }
+.hero-secondary { white-space:nowrap; }
+@media (max-height:760px) and (min-width:901px) {
+  main { height:calc(100svh - 124px); }
+  .hero-shell { padding:22px 28px; }
+  .hero-copy h1 { font-size:clamp(36px,4vw,54px); margin:16px 0 13px; }
+  .hero-description { font-size:13px; line-height:1.65; }
+  .hero-actions { margin-top:18px; }
+  .hero-visual { transform:scale(.85); }
+  #glasswave .glasswave-intro { padding:21px; }
+  .glasswave-intro h3 { font-size:24px; margin:15px 0 9px; }
+  .glasswave-intro p { font-size:12px; line-height:1.65; margin-bottom:15px; }
+  .music-player { padding:15px; }
+  .track-list { max-height:135px; }
+}
+@media (max-width:900px) {
+  main { height:calc(100svh - 137px); }
+  .hero { padding:8px 0 12px; }
+  .hero-shell { grid-template-columns:1fr .8fr; gap:14px; padding:23px; }
+  .hero-visual { min-height:240px; }
+  .hero-visual .project-glass-card { width:100%; padding:18px; min-height:230px; }
+  .art-logo { width:78px; height:78px; }
+  .glasswave-layout { grid-template-columns:1fr; }
+  .glasswave-intro { padding:21px; }
+}
+@media (max-width:650px) {
+  main { height:calc(100svh - 141px); }
+  .hero { padding:8px 0 12px; }
+  .hero-shell { display:flex; flex-direction:column; justify-content:center; gap:12px; padding:21px 17px; border-radius:25px; }
+  .hero-copy h1 { font-size:clamp(35px,10vw,52px); }
+  .hero-description { font-size:13px; line-height:1.65; }
+  .hero-actions { margin-top:17px; }
+  .hero-note { margin-top:13px; }
+  .hero-visual { flex:1; min-height:190px; max-height:250px; width:100%; }
+  .project-glass-card { min-height:190px!important; padding:15px!important; }
+  .card-art { min-height:75px; margin:7px 0; }
+  .art-logo { width:58px; height:58px; border-radius:17px; }
+  .wave { height:70px; }
+  #glasswave,#releases { padding-top:12px; padding-bottom:12px; }
+  #glasswave .section-heading { margin-bottom:12px; }
+  #glasswave .section-heading h2 { font-size:28px; }
+  #glasswave .section-lead { font-size:11px; line-height:1.55; }
+  .glasswave-intro { padding:16px!important; }
+  .glasswave-intro h3 { font-size:22px; margin:12px 0 8px; }
+  .glasswave-intro p { font-size:11px; line-height:1.55; margin-bottom:12px; }
+  .glasswave-intro .local-chip { padding:6px 8px; }
+  .glass-contact-link { margin-top:10px; }
+  .music-player { padding:12px!important; }
+  .player-head { margin-bottom:9px; }
+  .dropzone { padding:10px; margin-bottom:8px; }
+  .track-list { max-height:112px; margin-bottom:9px; }
+  .track-row { padding:6px 8px; grid-template-columns:31px minmax(0,1fr) auto; gap:8px; }
+  .album-art { height:31px; width:31px; }
+  .now-playing { grid-template-columns:38px minmax(0,1fr); padding:8px; gap:8px; }
+  .now-art { height:38px; width:38px; }
+  .transport { grid-column:1/-1; justify-content:center; }
+  .timeline { margin-top:9px; }
+  .player-bottom { margin-top:8px; }
+  #releases .release-panel { padding:19px; gap:15px; }
+  #releases .release-panel h2 { font-size:29px; }
+  #releases .release-copy { font-size:11px; line-height:1.6; }
+  #releases .release-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+<style id="regular-glass-refresh">
+html { scroll-behavior:auto; }
+body { overflow:hidden; background:var(--bg); }
+body::before,body::after { display:none!important; }
+.site-header { position:relative; width:min(1240px,calc(100% - 26px)); margin:12px auto 0; padding:12px 0 10px; border:1px solid var(--glass-border); border-radius:26px; background:var(--header); box-shadow:0 14px 42px rgba(0,0,0,.1),inset 0 1px 0 var(--glass-edge); }
+.site-header .wrap { width:min(1160px,calc(100% - 28px)); }
+.project-picker { min-width:0; background:rgba(255,255,255,.035); border-color:rgba(255,255,255,.43); box-shadow:0 14px 32px rgba(0,0,0,.11),inset 0 1px 0 rgba(255,255,255,.58); }
+.picker-scene { display:block; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 56%; opacity:.8; filter:saturate(1.18) brightness(.72); pointer-events:none; }
+.picker-indicator { z-index:1; background:rgba(220,250,255,.07); border:1px solid rgba(255,255,255,.54); box-shadow:0 8px 25px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.8); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.project-tab { position:relative; z-index:2; color:rgba(255,255,255,.78); }
+.project-tab[aria-pressed="true"] { color:#fff; text-shadow:0 1px 12px rgba(0,0,0,.3); }
+main { height:calc(100svh - 132px); min-height:0; overflow:hidden; }
+main>.hero,main>.section { display:none!important; }
+main[data-active-project="overview"]>.hero,main[data-active-project="v8v"]>.hero,main[data-active-project="vortex"]>.hero { display:grid!important; }
+main[data-active-project="glasswave"]>#glasswave,main[data-active-project="releases"]>#releases { display:block!important; }
+main>#projects,main>#contact { display:none!important; }
+.hero { height:100%; min-height:0; padding:8px 0 14px; align-items:stretch; }
+.hero-shell { height:100%; min-height:0; padding:clamp(22px,4vw,48px); border:1px solid rgba(255,255,255,.3); border-radius:30px; background:rgba(8,20,19,.28); box-shadow:0 24px 65px rgba(0,0,0,.12); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.hero-shell::before,.hero-shell::after { display:none!important; }
+.hero-copy h1 { font-size:clamp(42px,5.2vw,70px); }
+.hero-description { max-width:510px; color:rgba(255,255,255,.9); text-shadow:0 1px 10px rgba(0,0,0,.28); }
+.hero-note { color:rgba(255,255,255,.74); }
+.hero-visual { min-height:0; height:100%; overflow:visible; }
+.hero-visual .orbit,.hero-visual .orb { display:none!important; }
+.hero-glass-scene { position:absolute; inset:-2%; z-index:0; display:block; width:104%; height:104%; object-fit:cover; object-position:center; border-radius:28px; opacity:1; }
+.hero-glass-tint { position:absolute; inset:0; z-index:0; pointer-events:none; border-radius:28px; background:linear-gradient(112deg,rgba(7,20,17,.18),rgba(8,14,28,.13)); }
+.project-glass-card { z-index:1; width:min(420px,95%); min-height:280px; padding:25px; transform:none; border:1px solid rgba(255,255,255,.55); background:rgba(8,20,20,.34); box-shadow:0 25px 70px rgba(0,0,0,.16); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.project-glass-card:hover { transform:translateY(-3px); }
+.project-glass-card>:not(canvas) { position:relative; z-index:2; }
+.card-art { min-height:130px; }
+.art-logo { width:88px; height:88px; transform:none; }
+.glasswave-scene { position:absolute; inset:0; z-index:0; display:block; width:100%; height:100%; object-fit:cover; object-position:center 58%; border-radius:26px; opacity:1; }
+.glasswave-scene-tint { position:absolute; inset:0; z-index:0; pointer-events:none; border-radius:26px; background:linear-gradient(105deg,rgba(6,20,17,.52),rgba(7,14,26,.34)); }
+.glasswave-layout { grid-template-columns:.72fr 1.28fr; gap:16px; padding:0; border-radius:27px; }
+.glasswave-intro,.music-player { position:relative; z-index:1; min-width:0; border:1px solid rgba(255,255,255,.52); border-radius:24px; background:rgba(8,20,22,.34); box-shadow:0 20px 55px rgba(0,0,0,.12); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); color:#fff; }
+.glasswave-intro>:not(canvas),.music-player>:not(canvas) { position:relative; z-index:2; }
+.glasswave-intro::before { display:none!important; }
+.glasswave-intro h3 { color:#fff; font-size:clamp(24px,2.3vw,34px); text-shadow:0 2px 15px rgba(0,0,0,.42); }
+.glasswave-intro .gradient-text { background:linear-gradient(100deg,#eafff6,#9bffe0 48%,#c4d9ff); background-clip:text; -webkit-background-clip:text; color:transparent; }
+.glasswave-intro p { color:rgba(255,255,255,.89)!important; text-shadow:0 1px 8px rgba(0,0,0,.22); }
+.glasswave-intro .local-chip { color:#fff; background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.35); }
+.glass-contact-link { color:#fff; background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.38); box-shadow:inset 0 1px 0 rgba(255,255,255,.5); }
+.player-head strong,.now-meta strong,.track-meta strong { color:#fff; }
+.player-head span,.dropzone p,.track-meta span,.track-duration,.timeline,.player-bottom { color:rgba(255,255,255,.78); }
+.dropzone { background:rgba(255,255,255,.075); border-color:rgba(255,255,255,.38); }
+.dropzone strong { color:#fff; }
+.track-row { background:rgba(255,255,255,.055); border-color:transparent; }
+.track-row:hover,.track-row.active { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.28); }
+.empty-library { color:rgba(255,255,255,.78); background:rgba(5,16,15,.16); border-color:rgba(255,255,255,.25); }
+.now-playing { background:rgba(255,255,255,.105); border-color:rgba(255,255,255,.32); }
+.transport button { color:#fff; background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.3); }
+.mini-btn { color:#fff; background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.3); }
+.volume { color:rgba(255,255,255,.84); }
+#glasswave,#releases { height:100%; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding-top:20px; padding-bottom:18px; }
+#glasswave .section-heading { margin-bottom:16px; }
+#glasswave .section-lead { color:var(--muted); }
+#releases { position:relative; }
+.release-scene { position:absolute; inset:0; z-index:0; display:block; width:100%; height:100%; object-fit:cover; object-position:center; border-radius:25px; }
+.release-scene-tint { position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(105deg,rgba(6,20,17,.48),rgba(7,14,26,.32)); border-radius:25px; }
+#releases .release-panel { position:relative; z-index:1; min-height:100%; align-content:center; background:rgba(8,20,22,.34); border:1px solid rgba(255,255,255,.5); box-shadow:0 20px 60px rgba(0,0,0,.12); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); color:#fff; }
+#releases .release-panel>:not(canvas) { position:relative; z-index:2; }
+#releases .release-panel::before { display:none!important; }
+#releases .release-copy,#releases .release-item span { color:rgba(255,255,255,.84); }
+#releases .release-item { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.28); }
+.contact-row,.footer { display:none!important; }
+/* The WebGL canvas supplies the real refraction; avoid painting opaque CSS over it. */
+#projectPicker[data-glass-ready="true"] .picker-indicator { background:transparent!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; border-color:rgba(255,255,255,.42); }
+#heroVisual[data-glass-ready="true"] .project-glass-card { background:transparent!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; border-color:rgba(255,255,255,.4); }
+.glasswave-layout[data-glass-ready="true"]>.glasswave-intro,.glasswave-layout[data-glass-ready="true"]>.music-player { background:transparent!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; border-color:rgba(255,255,255,.42); }
+#releases[data-glass-ready="true"]>.release-panel { background:transparent!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; border-color:rgba(255,255,255,.42); }
+/* Readable fallback if WebGL or the CDN is unavailable. */
+#projectPicker[data-glass-fallback="true"] .picker-indicator { background:rgba(229,250,255,.19); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+#heroVisual[data-glass-fallback="true"] .project-glass-card,.glasswave-layout[data-glass-fallback="true"]>.glasswave-intro,.glasswave-layout[data-glass-fallback="true"]>.music-player,#releases[data-glass-fallback="true"]>.release-panel { background:rgba(7,22,19,.48); backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5); box-shadow:0 24px 60px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.46); }
+@media (max-height:760px) and (min-width:901px) { main { height:calc(100svh - 124px); } .hero-shell { padding:20px 27px; } .hero-copy h1 { font-size:clamp(36px,4vw,54px); margin:15px 0 12px; } .hero-description { font-size:13px; line-height:1.62; } .hero-actions { margin-top:16px; } .hero-visual { transform:scale(.87); } #glasswave .glasswave-intro { padding:21px; } .glasswave-intro h3 { margin:13px 0 8px; } .glasswave-intro p { font-size:12px; line-height:1.62; margin-bottom:13px; } .music-player { padding:14px; } .track-list { max-height:132px; } }
+@media (max-width:900px) { main { height:calc(100svh - 137px); } .hero-shell { grid-template-columns:1fr .8fr; gap:14px; padding:23px; } .hero-visual { min-height:240px; } .project-glass-card { width:100%; min-height:230px; padding:18px; } .glasswave-layout { grid-template-columns:1fr; gap:12px; } .glasswave-intro { padding:20px; } }
+@media (max-width:650px) { main { height:calc(100svh - 141px); } .site-header { width:calc(100% - 14px); margin-top:7px; border-radius:19px; padding-top:8px; } .hero { padding:8px 0 12px; } .hero-shell { display:flex; flex-direction:column; justify-content:center; gap:12px; padding:20px 16px; border-radius:25px; } .hero-copy h1 { font-size:clamp(35px,10vw,52px); } .hero-description { font-size:13px; line-height:1.6; } .hero-visual { flex:1; min-height:185px; max-height:245px; width:100%; } .project-glass-card { min-height:190px!important; padding:14px!important; } .card-art { min-height:70px; margin:6px 0; } .art-logo { width:56px; height:56px; } #glasswave,#releases { padding-top:10px; padding-bottom:10px; } #glasswave .section-heading { margin-bottom:11px; } #glasswave .section-heading h2 { font-size:28px; } #glasswave .section-lead { font-size:11px; line-height:1.5; } .glasswave-intro { padding:15px!important; } .glasswave-intro h3 { font-size:22px; margin:11px 0 7px; } .glasswave-intro p { font-size:11px; line-height:1.5; margin-bottom:10px; } .glasswave-intro .local-chip { padding:6px 8px; } .glass-contact-link { margin-top:9px; font-size:10px; } .music-player { padding:11px!important; } .player-head { margin-bottom:8px; } .dropzone { padding:9px; margin-bottom:7px; } .track-list { max-height:96px; margin-bottom:8px; } .track-row { padding:6px 7px; grid-template-columns:30px minmax(0,1fr) auto; gap:7px; } .album-art { height:30px; width:30px; } .now-playing { grid-template-columns:36px minmax(0,1fr); padding:7px; gap:7px; } .now-art { height:36px; width:36px; } .transport { grid-column:1/-1; justify-content:center; } .timeline { margin-top:8px; } .player-bottom { margin-top:7px; } #releases .release-panel { padding:17px; gap:13px; } #releases .release-panel h2 { font-size:27px; } #releases .release-copy { font-size:11px; line-height:1.55; } #releases .release-grid { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<style id="hl-new-design">
+body { margin:0!important; overflow:hidden!important; background:#0a1219!important; }
+body > header.site-header, body > main, body > footer.footer, body > .toast { display:none!important; }
+#hlNewSite {
+  --hl-bg:#0a1219;--hl-fg:#f0faf9;--hl-muted:#a9c0c2;--hl-soft:#6f898c;
+  --hl-line:rgba(228,250,255,.17);--hl-panel:rgba(172,220,230,.055);
+  --hl-panel-2:rgba(202,241,247,.095);--hl-edge:rgba(255,255,255,.62);
+  --hl-accent:#9af3dd;--hl-accent2:#97b7ff;--hl-ink:#09201e;
+  height:100svh;min-height:520px;overflow:hidden;isolation:isolate;position:relative;
+  display:flex;flex-direction:column;color:var(--hl-fg);background:var(--hl-bg);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+#hlNewSite[data-theme="light"] { color-scheme:light;--hl-bg:#e7f1f4;--hl-fg:#132d34;--hl-muted:#4c6971;--hl-soft:#6a848a;--hl-line:rgba(24,64,72,.16);--hl-panel:rgba(255,255,255,.24);--hl-panel-2:rgba(255,255,255,.37);--hl-edge:rgba(255,255,255,.91);--hl-accent:#087f68;--hl-accent2:#477bd2;--hl-ink:#f6fffd; }
+@media(prefers-color-scheme:light){#hlNewSite[data-theme="auto"]{color-scheme:light;--hl-bg:#e7f1f4;--hl-fg:#132d34;--hl-muted:#4c6971;--hl-soft:#6a848a;--hl-line:rgba(24,64,72,.16);--hl-panel:rgba(255,255,255,.24);--hl-panel-2:rgba(255,255,255,.37);--hl-edge:rgba(255,255,255,.91);--hl-accent:#087f68;--hl-accent2:#477bd2;--hl-ink:#f6fffd;}}
+#hlNewSite *{box-sizing:border-box} #hlNewSite button,#hlNewSite select,#hlNewSite input{font:inherit} #hlNewSite button,#hlNewSite a,#hlNewSite select{-webkit-tap-highlight-color:transparent} #hlNewSite a{color:inherit;text-decoration:none} #hlNewSite button{cursor:pointer;color:inherit} #hlNewSite button:focus-visible,#hlNewSite a:focus-visible,#hlNewSite select:focus-visible,#hlNewSite input:focus-visible{outline:2px solid var(--hl-accent2);outline-offset:3px}
+.hl-ambient{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(114deg,transparent 0 7%,rgba(83,220,197,.1) 18%,transparent 33%),linear-gradient(26deg,transparent 15%,rgba(88,143,227,.16) 48%,transparent 72%),linear-gradient(155deg,transparent 32%,rgba(173,151,255,.09) 57%,transparent 82%),var(--hl-bg)}
+.hl-ambient::before{content:"";position:absolute;inset:0;background:linear-gradient(112deg,rgba(7,16,23,.58),rgba(7,18,26,.26) 55%,rgba(12,17,36,.48)),url("https://cdn.jsdelivr.net/gh/ServiceStack/images@master/hero/photo-1451187580459-43490279c0fa.jpg") center/cover no-repeat;opacity:.24;mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.8) 55%,transparent 100%);mix-blend-mode:screen}
+#hlNewSite[data-theme="light"] .hl-ambient::before{opacity:.1;mix-blend-mode:multiply}
+@media(prefers-color-scheme:light){#hlNewSite[data-theme="auto"] .hl-ambient::before{opacity:.1;mix-blend-mode:multiply}}
+.hl-topbar{width:min(1320px,calc(100% - 44px));height:68px;flex:none;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hl-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.hl-brand-icon{width:39px;height:39px;flex:none;display:grid;place-items:center;border-radius:13px;color:#09211e;background:linear-gradient(140deg,#c9fff1 0%,#8be4dc 46%,#9cbbff 100%);box-shadow:0 7px 24px rgba(105,228,217,.17),inset 0 1px 0 rgba(255,255,255,.9)}
+.hl-brand-icon svg{width:23px;height:23px}
+.hl-brand-name{font-size:19px;font-weight:850;letter-spacing:-.055em;line-height:1.15}
+.hl-brand-sub{font-size:9px;color:var(--hl-muted);font-weight:750;letter-spacing:.17em;margin-top:4px}
+.hl-actions{display:flex;align-items:center;gap:8px}
+.hl-theme-wrap{position:relative}
+.hl-theme-toggle{min-width:112px;height:39px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:13px;border:1px solid var(--hl-line);border-radius:13px;background:linear-gradient(130deg,rgba(215,247,248,.085),rgba(192,216,255,.035));box-shadow:inset 0 1px 0 var(--hl-edge);font-size:11px!important;font-weight:760!important;white-space:nowrap;transition:background .2s,border-color .2s}
+.hl-theme-toggle:hover,.hl-theme-toggle[aria-expanded="true"]{border-color:color-mix(in srgb,var(--hl-accent2) 55%,var(--hl-line));background:var(--hl-panel-2)}
+.hl-theme-chevron{font-size:10px;opacity:.75;transition:transform .22s}
+.hl-theme-toggle[aria-expanded="true"] .hl-theme-chevron{transform:rotate(180deg)}
+.hl-theme-menu{position:absolute;z-index:80;top:calc(100% + 8px);right:0;min-width:166px;padding:6px;border:1px solid rgba(232,253,255,.25);border-radius:17px;background:linear-gradient(140deg,rgba(221,249,250,.15),rgba(149,180,224,.06) 60%,rgba(255,255,255,.08)),rgba(10,24,33,.8);backdrop-filter:blur(30px) saturate(1.7);-webkit-backdrop-filter:blur(30px) saturate(1.7);box-shadow:0 18px 48px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.55);opacity:0;transform:translateY(-5px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .2s,transform .2s}
+.hl-theme-menu[hidden]{display:none}
+.hl-theme-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.hl-theme-option{width:100%;min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 11px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--hl-muted);font-size:11px!important;text-align:left}
+.hl-theme-option:hover{background:rgba(226,250,255,.09);color:var(--hl-fg)}
+.hl-theme-option[aria-checked="true"]{background:linear-gradient(115deg,rgba(171,255,235,.13),rgba(168,192,255,.12));border-color:rgba(225,255,255,.18);color:var(--hl-fg)}
+.hl-theme-option[aria-checked="true"]::after{content:"✓";color:var(--hl-accent);font-weight:900}
+.hl-select,.hl-small-button{height:39px;padding:0 12px;border:1px solid var(--hl-line);border-radius:13px;background:var(--hl-panel);box-shadow:inset 0 1px 0 var(--hl-edge);font-size:11px!important;font-weight:750!important;color:var(--hl-fg)}
+.hl-select{max-width:124px}
+.hl-project-nav-wrap{width:min(1320px,calc(100% - 44px));flex:none;margin:0 auto 15px}
+ #hlNavRoot{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:5px;border:1px solid var(--hl-line);border-radius:20px;overflow:hidden;background:rgba(119,165,174,.065);box-shadow:0 13px 42px rgba(0,0,0,.09),inset 0 1px 0 var(--hl-edge)}
+.hl-nav-backdrop{position:absolute;z-index:-2;inset:0;pointer-events:none;background:linear-gradient(105deg,rgba(91,236,208,.09),transparent 36%,rgba(139,161,255,.12) 76%,transparent)}
+.hl-nav-indicator{position:absolute;z-index:-1;left:5px;top:5px;bottom:5px;width:calc((100% - 10px - 16px)/4);border:1px solid rgba(255,255,255,.36);border-radius:15px;pointer-events:none;transform:translateX(calc(var(--hl-slide,0) * (100% + 4px)));transition:transform .64s cubic-bezier(.16,.84,.2,1);background:linear-gradient(112deg,rgba(177,255,239,.18),rgba(255,255,255,.075) 52%,rgba(176,192,255,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.62),0 8px 24px rgba(0,0,0,.08)}
+.hl-tab{min-width:0;min-height:42px;padding:8px 10px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;background:transparent;color:var(--hl-muted);font-size:12px!important;font-weight:760!important;white-space:nowrap;transition:color .24s,transform .24s}
+.hl-tab svg{width:16px;height:16px;flex:none;opacity:.84}.hl-tab:hover{color:var(--hl-fg);transform:translateY(-1px)}.hl-tab[aria-pressed="true"]{color:var(--hl-fg)}
+#hlNewMain{width:min(1320px,calc(100% - 44px));flex:1;min-height:0;margin:0 auto 17px;position:relative}
+#hlPanelRoot{height:100%;min-height:0;position:relative;isolation:isolate;display:grid}
+.hl-panel-backdrop{position:absolute;z-index:0;inset:0;pointer-events:none;border-radius:32px;background:linear-gradient(112deg,var(--hl-scene-a,rgba(74,227,199,.2)) 0%,transparent 32%,var(--hl-scene-b,rgba(117,153,255,.24)) 74%,rgba(255,255,255,.025) 100%),linear-gradient(24deg,rgba(198,249,243,.035),transparent 46%,rgba(156,174,255,.05));transition:background .5s}
+.hl-panel{position:relative;z-index:1;isolation:isolate;min-height:0;height:100%;overflow:auto;overscroll-behavior:contain;border:1px solid var(--hl-line);border-radius:32px;background:rgba(182,224,231,.025);box-shadow:0 28px 90px rgba(0,0,0,.15),inset 0 1px 0 var(--hl-edge);backdrop-filter:blur(22px) saturate(1.17);-webkit-backdrop-filter:blur(22px) saturate(1.17);scrollbar-width:thin;scrollbar-color:var(--hl-line) transparent}
+.hl-content{min-height:100%;padding:clamp(24px,4vw,54px);display:flex;flex-direction:column;justify-content:center}
+.hl-kicker{color:var(--hl-muted);font-size:10px;font-weight:850;letter-spacing:.2em;text-transform:uppercase;display:flex;align-items:center;gap:9px}
+.hl-kicker-line{width:22px;height:1px;background:linear-gradient(90deg,var(--hl-accent),var(--hl-accent2))}
+.hl-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:clamp(24px,5vw,76px);align-items:center}
+.hl-title{font-size:clamp(40px,6vw,76px);line-height:.98;letter-spacing:-.075em;font-weight:810;margin:22px 0 21px;max-width:750px}
+.hl-title em{font-style:normal;color:transparent;background:linear-gradient(100deg,var(--hl-accent),var(--hl-accent2) 74%,#c6b7ff);background-clip:text;-webkit-background-clip:text}
+.hl-gradient{color:transparent;background:linear-gradient(100deg,var(--hl-accent),var(--hl-accent2) 74%,#c6b7ff);background-clip:text;-webkit-background-clip:text}
+.hl-copy{font-size:clamp(13px,1.25vw,16px);line-height:1.85;color:var(--hl-muted);max-width:580px;margin:0}
+.hl-cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.hl-cta{min-height:44px;padding:0 17px;border:1px solid var(--hl-line);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:12px!important;font-weight:800!important;transition:transform .24s,background .24s,box-shadow .24s}
+.hl-cta:hover{transform:translateY(-2px);box-shadow:0 10px 27px rgba(0,0,0,.09)}
+.hl-cta-primary{color:var(--hl-ink)!important;border-color:transparent;background:linear-gradient(112deg,var(--hl-accent),var(--hl-accent2));box-shadow:0 8px 22px rgba(102,217,201,.12),inset 0 1px 0 rgba(255,255,255,.66)}
+.hl-cta-secondary{background:rgba(210,240,245,.045);box-shadow:inset 0 1px 0 var(--hl-edge)}
+.hl-meta-line{display:flex;align-items:center;gap:17px;margin-top:27px;color:var(--hl-soft);font-size:10px;letter-spacing:.02em}
+.hl-meta-line span{display:inline-flex;align-items:center;gap:7px}.hl-status-bar{width:5px;height:5px;border-radius:1px;background:var(--hl-accent);box-shadow:0 0 12px var(--hl-accent)}
+.hl-feature{position:relative;overflow:hidden;min-height:330px;padding:25px;border-radius:24px;border:1px solid var(--hl-line);background:linear-gradient(130deg,rgba(208,245,246,.07),rgba(209,223,255,.025) 48%,rgba(206,217,255,.065));box-shadow:inset 0 1px 0 var(--hl-edge);display:flex;flex-direction:column;justify-content:space-between}
+.hl-feature::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.8;background:linear-gradient(112deg,transparent 0 9%,rgba(109,239,208,.11) 25%,transparent 43%),linear-gradient(24deg,transparent 28%,rgba(135,164,255,.13) 62%,transparent 81%);mix-blend-mode:screen}
+.hl-feature-top,.hl-feature-bottom{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--hl-muted);font-size:10px;font-weight:760;letter-spacing:.13em;text-transform:uppercase}
+.hl-feature-word{position:relative;z-index:1;margin:30px 0;font-size:clamp(52px,8vw,112px);font-weight:900;letter-spacing:-.105em;line-height:.86;color:rgba(235,255,255,.78);text-shadow:0 5px 38px rgba(129,225,228,.18);overflow-wrap:anywhere}
+#hlNewSite[data-theme="light"] .hl-feature-word{color:rgba(27,72,81,.7);text-shadow:0 4px 26px rgba(62,162,169,.14)}
+#hlNewSite[data-theme="auto"] .hl-feature-word{color:rgba(235,255,255,.78)}
+@media(prefers-color-scheme:light){#hlNewSite[data-theme="auto"] .hl-feature-word{color:rgba(27,72,81,.7)}}
+.hl-feature-bars{height:60px;display:flex;align-items:center;gap:4px;position:relative;z-index:1;overflow:hidden}
+.hl-feature-bars i{display:block;flex:1;height:var(--h);max-width:8px;border-radius:3px;background:linear-gradient(180deg,var(--hl-accent),var(--hl-accent2));opacity:.85;animation:hlWave .95s ease-in-out infinite alternate;animation-delay:var(--d)}
+.hl-v8v-visual{position:relative;isolation:isolate;overflow:hidden;min-height:330px;padding:25px;border-radius:24px;border:1px solid rgba(245,203,219,.22);background:linear-gradient(125deg,rgba(62,22,42,.62),rgba(20,25,48,.6) 57%,rgba(36,32,70,.57));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 24px 65px rgba(0,0,0,.14);display:flex;flex-direction:column;justify-content:space-between}
+.hl-v8v-visual::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.42;background:repeating-linear-gradient(135deg,transparent 0 27px,rgba(255,170,197,.15) 28px,transparent 29px 54px),linear-gradient(110deg,transparent 18%,rgba(219,77,123,.22) 50%,transparent 76%);mask-image:linear-gradient(130deg,#000,rgba(0,0,0,.8) 62%,transparent)}
+.hl-v8v-top,.hl-v8v-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;color:rgba(255,233,242,.72);font-size:9px;font-weight:820;letter-spacing:.16em;text-transform:uppercase}
+.hl-v8v-tag{border:1px solid rgba(255,204,220,.28);border-radius:8px;padding:7px 9px;background:rgba(255,220,232,.06)}
+.hl-v8v-word{font-size:clamp(76px,13vw,150px);font-weight:950;letter-spacing:-.115em;line-height:.82;color:transparent;background:linear-gradient(145deg,#fff0f5,#ff9dbb 48%,#b1aaff);background-clip:text;-webkit-background-clip:text;text-shadow:0 14px 40px rgba(211,77,128,.12);margin:35px 0}
+.hl-v8v-index{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:18px}
+.hl-v8v-index span{padding:9px 7px;border:1px solid rgba(255,221,235,.17);border-radius:9px;background:rgba(255,231,239,.045);font-size:9px;color:rgba(255,234,243,.77);text-align:center;letter-spacing:.05em}
+@keyframes hlWave{from{transform:scaleY(.56);opacity:.48}to{transform:scaleY(1);opacity:.95}}
+.hl-project-chip{display:inline-flex;align-items:center;gap:8px;color:var(--hl-muted);border:1px solid var(--hl-line);background:rgba(220,244,246,.045);border-radius:10px;padding:8px 10px;font-size:10px;font-weight:770;letter-spacing:.08em;text-transform:uppercase}
+.hl-project-chip b{display:block;width:5px;height:5px;border-radius:1px;background:var(--hl-accent)}
+.hl-screen-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:27px}
+.hl-screen-head .hl-title{font-size:clamp(34px,4.5vw,57px);margin:13px 0 0}
+.hl-screen-head .hl-copy{max-width:390px;font-size:12px}
+.hl-glasswave-grid{display:grid;grid-template-columns:.76fr 1.24fr;gap:15px;align-items:stretch}
+.hl-about,.hl-player{border:1px solid var(--hl-line);border-radius:23px;min-width:0;background:linear-gradient(130deg,rgba(210,245,242,.065),rgba(195,222,255,.025) 54%,rgba(225,231,255,.055));box-shadow:inset 0 1px 0 var(--hl-edge)}
+.hl-about{padding:24px;display:flex;flex-direction:column;align-items:flex-start}
+.hl-about-title{font-size:26px;font-weight:790;letter-spacing:-.06em;margin:18px 0 11px}
+.hl-about-copy{font-size:12px;line-height:1.8;color:var(--hl-muted);margin:0}
+.hl-contact-link{margin-top:18px;padding:10px 12px;border:1px solid var(--hl-line);border-radius:12px;background:rgba(220,245,245,.045);font-size:10px;font-weight:800}
+.hl-contact-link:hover{border-color:var(--hl-accent2)}
+.hl-player{padding:19px;display:flex;flex-direction:column;gap:13px}
+.hl-player-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:820}
+.hl-player-head small{font-size:10px;font-weight:650;color:var(--hl-soft)}
+.hl-file-box{padding:14px;border:1px dashed color-mix(in srgb,var(--hl-accent2) 43%,var(--hl-line));border-radius:16px;background:rgba(195,235,240,.025);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hl-file-box strong{display:block;font-size:12px}.hl-file-box p{font-size:10px;color:var(--hl-muted);line-height:1.5;margin:5px 0 0}
+.hl-file-button{flex:none;min-height:37px;padding:0 12px;font-size:10px!important}
+.hl-hidden-input{display:none!important}
+.hl-track-list{display:flex;flex-direction:column;gap:5px;max-height:142px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--hl-line) transparent}
+.hl-track{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 9px;text-align:left;border:1px solid transparent;border-radius:12px;background:rgba(210,241,245,.025);width:100%;min-width:0}
+.hl-track:hover,.hl-track.active{background:rgba(160,218,226,.1);border-color:var(--hl-line)}
+.hl-track-art{height:32px;width:32px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,rgba(115,245,210,.83),rgba(137,158,255,.85));color:#102725;font-size:10px;font-weight:900}
+.hl-track-text{min-width:0}.hl-track-text strong,.hl-track-text span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hl-track-text strong{font-size:11px}.hl-track-text span{font-size:9px;color:var(--hl-muted);margin-top:4px}.hl-track-time{font-size:9px;color:var(--hl-muted);font-variant-numeric:tabular-nums}
+.hl-empty{padding:16px 12px;text-align:center;color:var(--hl-muted);font-size:10px;line-height:1.7;border:1px dashed var(--hl-line);border-radius:13px}
+.hl-now{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid var(--hl-line);border-radius:15px;background:rgba(210,241,245,.045)}
+.hl-cover{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#b4ffe6,#91a9ff);color:#102825}.hl-cover svg{width:22px;height:22px}
+.hl-now-text{min-width:0}.hl-now-text strong,.hl-now-text span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hl-now-text strong{font-size:11px}.hl-now-text span{font-size:9px;color:var(--hl-muted);margin-top:4px}
+.hl-controls{display:flex;align-items:center;gap:5px}.hl-control{height:31px;min-width:31px;padding:0 8px;border:1px solid var(--hl-line);border-radius:10px;background:rgba(214,245,247,.04);font-size:10px!important;font-weight:800!important}.hl-control-play{height:37px;min-width:37px;border:0;color:var(--hl-ink)!important;background:linear-gradient(120deg,var(--hl-accent),var(--hl-accent2))}
+.hl-timeline{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:8px;align-items:center;font-size:9px;color:var(--hl-muted);font-variant-numeric:tabular-nums}
+#hlNewSite input[type=range]{width:100%;accent-color:var(--hl-accent2);cursor:pointer}
+.hl-player-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--hl-muted);font-size:10px}
+.hl-volume{display:flex;align-items:center;gap:7px;max-width:150px}.hl-volume input{width:82px}
+.hl-info-link{display:inline-flex;margin-top:24px;font-size:11px;color:var(--hl-muted);border-bottom:1px solid var(--hl-line);padding-bottom:4px}
+.hl-info-link:hover{color:var(--hl-fg)}
+.hl-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:28px}
+.hl-status-item{padding:14px;border:1px solid var(--hl-line);border-radius:14px;background:rgba(211,242,244,.035)}
+.hl-status-item strong{display:block;font-size:11px}.hl-status-item span{display:block;color:var(--hl-muted);font-size:10px;line-height:1.55;margin-top:6px}
+.hl-notice{position:fixed;z-index:100;bottom:22px;left:50%;transform:translate(-50%,12px) scale(.98);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;padding:13px 17px 13px 44px;border:1px solid rgba(225,252,255,.3);border-radius:16px;background:linear-gradient(130deg,rgba(221,250,249,.16),rgba(158,188,238,.06) 58%,rgba(255,255,255,.09)),rgba(12,29,38,.72);backdrop-filter:blur(28px) saturate(1.7);-webkit-backdrop-filter:blur(28px) saturate(1.7);color:#f1ffff;font-size:11px;box-shadow:0 18px 48px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.57);max-width:calc(100vw - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hl-notice::before{content:"✓";position:absolute;left:13px;top:50%;transform:translateY(-50%);width:21px;height:21px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,#c9fff0,#91d9d7);color:#0a2b26;font-size:12px;font-weight:950;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.hl-notice[data-kind="error"]::before{content:"!";background:linear-gradient(135deg,#ffd6de,#f5a8bf);color:#421a2b}
+.hl-notice.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.hl-domain-link{color:var(--hl-muted);font-size:10px;letter-spacing:.12em;border-bottom:1px solid var(--hl-line);padding-bottom:4px;white-space:nowrap}.hl-domain-link:hover{color:var(--hl-fg);border-color:var(--hl-accent2)}
+@media(prefers-reduced-motion:reduce){#hlNewSite *,#hlNewSite *::before,#hlNewSite *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(max-width:860px){.hl-grid{grid-template-columns:1fr .82fr;gap:18px}.hl-feature{min-height:280px;padding:20px}.hl-glasswave-grid{grid-template-columns:.85fr 1.15fr}.hl-content{padding:24px}.hl-screen-head{align-items:flex-start;flex-direction:column;gap:12px}.hl-screen-head .hl-copy{max-width:650px}}
+@media(max-width:680px){#hlNewSite{min-height:500px}.hl-topbar{width:calc(100% - 24px);height:63px;gap:8px}.hl-brand-icon{width:34px;height:34px;border-radius:11px}.hl-brand-name{font-size:16px}.hl-brand-sub{font-size:7px;letter-spacing:.11em}.hl-actions{gap:5px}.hl-select,.hl-small-button{height:35px;padding:0 8px;font-size:10px!important}.hl-select{max-width:92px}.hl-project-nav-wrap{width:calc(100% - 16px);margin-bottom:9px}.hl-project-nav-wrap{overflow:visible}#hlNavRoot{grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;padding:4px;border-radius:16px}.hl-nav-indicator{left:4px;top:4px;bottom:4px;width:calc((100% - 8px - 4px)/5);border-radius:12px;transform:translateX(calc(var(--hl-slide,0) * (100% + 1px)))}.hl-tab{min-height:42px;display:flex;flex-direction:column;gap:4px;padding:4px 1px;font-size:8px!important;letter-spacing:-.02em}.hl-tab svg{width:14px;height:14px}#hlNewMain{width:calc(100% - 16px);margin-bottom:8px}#hlPanelRoot{height:100%}.hl-panel{border-radius:24px}.hl-panel-backdrop{border-radius:24px}.hl-content{padding:20px 17px}.hl-grid{grid-template-columns:1fr;gap:18px}.hl-title{font-size:clamp(36px,11vw,54px);margin:16px 0}.hl-copy{font-size:12px;line-height:1.7}.hl-cta-row{margin-top:19px}.hl-cta{min-height:41px;padding:0 12px;font-size:10px!important}.hl-meta-line{margin-top:19px;gap:11px;flex-wrap:wrap;font-size:9px}.hl-feature{min-height:155px;padding:15px;border-radius:17px;gap:10px}.hl-feature-word{font-size:52px;margin:13px 0}.hl-feature-bars{height:28px}.hl-feature-top,.hl-feature-bottom{font-size:8px}.hl-screen-head{margin-bottom:15px;gap:6px}.hl-screen-head .hl-title{font-size:33px;margin:10px 0 0}.hl-screen-head .hl-copy{font-size:10px;line-height:1.6}.hl-glasswave-grid{grid-template-columns:1fr;gap:9px}.hl-about{padding:15px;border-radius:17px}.hl-about-title{font-size:21px;margin:11px 0 7px}.hl-about-copy{font-size:10px;line-height:1.6}.hl-contact-link{margin-top:10px;font-size:9px;padding:8px 9px}.hl-player{padding:11px;border-radius:17px;gap:9px}.hl-player-head{font-size:10px}.hl-file-box{padding:10px;border-radius:13px;gap:7px}.hl-file-box strong{font-size:10px}.hl-file-box p{font-size:9px}.hl-file-button{font-size:9px!important;padding:0 9px;min-height:33px}.hl-track-list{max-height:100px}.hl-track{grid-template-columns:27px minmax(0,1fr) auto;gap:7px;padding:5px 6px}.hl-track-art{height:27px;width:27px}.hl-track-text strong{font-size:10px}.hl-now{grid-template-columns:34px minmax(0,1fr);padding:7px;gap:7px}.hl-cover{width:34px;height:34px}.hl-controls{grid-column:1/-1;justify-content:center}.hl-player-bottom{font-size:9px}.hl-volume{max-width:130px}.hl-volume input{width:65px}.hl-status-grid{margin-top:15px;gap:7px}.hl-status-item{padding:10px}.hl-status-item strong,.hl-status-item span{font-size:9px}.hl-feature-word{letter-spacing:-.08em}}
+@media(max-width:680px){#hlNavRoot{grid-template-columns:repeat(4,minmax(0,1fr))!important}.hl-nav-indicator{width:calc((100% - 8px - 3px)/4)!important}.hl-theme-toggle{min-width:98px;height:35px;padding:0 8px;font-size:10px!important}.hl-theme-menu{top:calc(100% + 6px);min-width:148px}.hl-v8v-visual{min-height:210px;padding:15px}.hl-v8v-word{font-size:85px;margin:21px 0}.hl-v8v-index{margin-top:10px}.hl-v8v-index span{padding:7px 4px;font-size:8px}}
+</style>
+<div id="hlNewSite" data-theme="auto">
+  <div class="hl-ambient" aria-hidden="true"></div>
+  <header class="hl-topbar">
+    <a class="hl-brand" href="#" id="hlNewHome" aria-label="Handy Labs home">
+      <span class="hl-brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h3l2-6 4 12 3-9 2 3h4"/></svg></span>
+      <span><span class="hl-brand-name">Handy Labs</span><span class="hl-brand-sub" id="hlNewBrandSub">PROJECTS · APPS · EXPERIMENTS</span></span>
+    </a>
+    <div class="hl-actions">
+      <button class="hl-small-button" id="hlNewLanguage" type="button" aria-label="Change language">RU</button>
+      <div class="hl-theme-wrap">
+        <button class="hl-theme-toggle" id="hlNewThemeToggle" type="button" aria-label="Color theme" aria-expanded="false" aria-controls="hlNewThemeMenu"><span id="hlNewThemeLabel">◐ System</span><span class="hl-theme-chevron" aria-hidden="true">⌄</span></button>
+        <div class="hl-theme-menu" id="hlNewThemeMenu" role="menu" hidden>
+          <button class="hl-theme-option" type="button" role="menuitemradio" aria-checked="true" data-hl-theme="auto">◐ <span data-hl-theme-label="auto">System</span></button>
+          <button class="hl-theme-option" type="button" role="menuitemradio" aria-checked="false" data-hl-theme="light">☼ <span data-hl-theme-label="light">Light</span></button>
+          <button class="hl-theme-option" type="button" role="menuitemradio" aria-checked="false" data-hl-theme="dark">◑ <span data-hl-theme-label="dark">Dark</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="hl-project-nav-wrap" aria-label="Choose a project">
+    <div id="hlNavRoot">
+      <div class="hl-nav-backdrop" aria-hidden="true"></div>
+      <span class="hl-nav-indicator" id="hlNavIndicator" aria-hidden="true"></span>
+      <button class="hl-tab" type="button" data-hl-project="overview" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v10H4V10M9 20v-6h6v6"/></svg><span data-hl-label="overviewTab">Overview</span></button>
+      <button class="hl-tab" type="button" data-hl-project="glasswave" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 12h3l2-5 4 10 3-13 3 16 2-8h3"/></svg><span>Glasswave</span></button>
+      <button class="hl-tab" type="button" data-hl-project="v8v" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6 7 18h2l3-9 3 9h2l4-12"/></svg><span>V8V Studio</span></button>
+      <button class="hl-tab" type="button" data-hl-project="releases" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></svg><span data-hl-label="releasesTab">Releases</span></button>
+    </div>
+  </div>
+  <main id="hlNewMain">
+    <div id="hlPanelRoot">
+      <div class="hl-panel-backdrop" id="hlPanelBackdrop" aria-hidden="true"></div>
+      <section class="hl-panel" id="hlNewPanel" aria-live="polite"></section>
+    </div>
+  </main>
+  <audio id="hlNewAudio" preload="metadata"></audio>
+  <div class="hl-notice" id="hlNewNotice" role="status" aria-live="polite"></div>
+</div>
+<script type="module">
+(() => {
+  const root = document.getElementById('hlNewSite');
+  const panel = document.getElementById('hlNewPanel');
+  const navRoot = document.getElementById('hlNavRoot');
+  const indicator = document.getElementById('hlNavIndicator');
+  const panelRoot = document.getElementById('hlPanelRoot');
+  const backdrop = document.getElementById('hlPanelBackdrop');
+  const audio = document.getElementById('hlNewAudio');
+  const themeToggle = document.getElementById('hlNewThemeToggle');
+  const themeMenu = document.getElementById('hlNewThemeMenu');
+  const langButton = document.getElementById('hlNewLanguage');
+  const tabs = Array.from(document.querySelectorAll('.hl-tab'));
+  const state = { project:'overview', lang:(navigator.language || 'en').toLowerCase().startsWith('ru')?'ru':'en', theme:'auto', tracks:[], index:-1, repeat:true, seeking:false, toastTimer:0 };
+  const uiSounds = {
+    select: new Audio('https://cdn.jsdelivr.net/gh/romainsimon/uisfx@main/packages/uisfx/sounds/glass/select.mp3'),
+    copy: new Audio('https://cdn.jsdelivr.net/gh/romainsimon/uisfx@main/packages/uisfx/sounds/glass/copy.mp3')
+  };
+  Object.values(uiSounds).forEach(sound=>{sound.preload='auto';sound.volume=.16;});
+  function playUISound(kind){const sound=uiSounds[kind];if(!sound)return;try{sound.currentTime=0;const playback=sound.play();if(playback&&typeof playback.catch==='function')playback.catch(()=>{});}catch(e){}}
+  const copy = {
+    en: {
+      overviewTab:'Overview', releasesTab:'Releases', brandSub:'PROJECTS · APPS · EXPERIMENTS',
+      overviewKicker:'HANDY LABS / INDEPENDENT STUDIO', overviewTitle:'A home for things we <em>build.</em>', overviewCopy:'Games, apps and experiments with their own character. One studio, one place to explore what is in progress and what is coming next.', openGlasswave:'Explore Glasswave', contactHandy:'Contact Handy Labs', overviewStatus:'INDEPENDENT PROJECTS', overviewWord:'HANDY LABS', overviewFoot:'A small independent studio · Always in progress',
+      focus:'CURRENT FOCUS', status:'IN DEVELOPMENT', audioProjects:'AUDIO / EXPERIENCE', focusTitle:'Glasswave', focusCopy:'A personal music player built around a real Liquid Glass interface.', overviewFoot2:'Projects, apps and experiments — one home.',
+      glassKicker:'HANDY LABS / MUSIC', glassTitle:'Music, <em>refracted.</em>', glassCopy:'Glasswave is a personal music player for local libraries, playlists, artwork and a responsive visual atmosphere.', localDemo:'LOCAL BROWSER DEMO', noUpload:'Files stay on this device', glassEmail:'Contact Glasswave · GlasWave@proton.me', playerTitle:'Your temporary library', trackCount:'tracks', pickTracks:'Choose tracks', pickCopy:'Choose audio files from this device. They are only used in this browser tab.', emptyTracks:'Your playlist is empty. Choose audio files to begin.', nothingPlaying:'Nothing playing', unknownArtist:'Unknown artist', repeatAll:'Repeat all', repeatOff:'Repeat off', prev:'Previous', play:'Play', pause:'Pause', next:'Next', seek:'Seek', volume:'Volume', releaseStatus:'View release status', playerStatus:'Audio stays local. This demo does not upload your music.',
+      v8vKicker:'V8V / ROBLOX STUDIO', v8vTitle:'Horror with <em>intention.</em>', v8vCopy:'V8V is our home for Roblox horror projects, lobby systems, atmosphere, interactive UI and experimental game mechanics.', v8vBadge:'GAME DEVELOPMENT', v8vWord:'V8V', v8vSub:'HORROR · SYSTEMS · UI', contactV8v:'Contact Handy Labs about V8V', workInProgress:'WORK IN PROGRESS',
+      vortexKicker:'VORTEX / WEB', vortexTitle:'A web experience <em>in motion.</em>', vortexCopy:'Vortex is a phone-first web project with its own visual identity, purposeful interactions and room to grow.', vortexBadge:'WEB · IN DEVELOPMENT', vortexWord:'VORTEX', vortexSub:'WEB · MOBILE FIRST · UI', contactVortex:'Contact Handy Labs about Vortex',
+      releasesKicker:'HANDY LABS / RELEASES', releasesTitle:'Only real <em>releases.</em>', releasesCopy:'Downloads appear here after a build is tested. No placeholder EXEs and no mystery installers.', windows:'Glasswave · Windows', testing:'EXE in testing — no public download yet', web:'Glasswave · Web', available:'Local browser demo available', roblox:'V8V · Roblox Studio', progress:'Projects in development', future:'Android · macOS · Linux', planned:'Planned, not released', contactRelease:'Contact Handy Labs',
+      loadingGlass:'Preparing Liquid Glass…', glassFallback:'Using the built-in glass fallback.', added:n=>'Added '+n+' track'+(n===1?'':'s')+'.', noAudio:'No supported audio files found.', cantPlay:'This file could not be played by the browser.', needTracks:'Choose music first.', notification:'Release notifications are not connected yet.', playing:'Playing', paused:'Paused'
+    },
+    ru: {
+      overviewTab:'Обзор', releasesTab:'Релизы', brandSub:'ПРОЕКТЫ · ПРИЛОЖЕНИЯ · ЭКСПЕРИМЕНТЫ',
+      overviewKicker:'HANDY LABS / НЕЗАВИСИМАЯ СТУДИЯ', overviewTitle:'Место для того, что мы <em>создаём.</em>', overviewCopy:'Игры, приложения и эксперименты со своим характером. Одна студия и одно место, где можно изучить текущие проекты и будущие релизы.', openGlasswave:'Открыть Glasswave', contactHandy:'Связаться с Handy Labs', overviewStatus:'НЕЗАВИСИМЫЕ ПРОЕКТЫ', overviewWord:'HANDY LABS', overviewFoot:'Небольшая независимая студия · Разработка продолжается',
+      focus:'СЕЙЧАС В РАБОТЕ', status:'В РАЗРАБОТКЕ', audioProjects:'АУДИО / ВПЕЧАТЛЕНИЯ', focusTitle:'Glasswave', focusCopy:'Музыкальный плеер с настоящим интерфейсом Liquid Glass.', overviewFoot2:'Проекты, приложения и эксперименты — в одном месте.',
+      glassKicker:'HANDY LABS / МУЗЫКА', glassTitle:'Музыка, <em>преломлённая стеклом.</em>', glassCopy:'Glasswave — музыкальный плеер для локальной библиотеки, плейлистов, обложек и живой визуальной атмосферы.', localDemo:'ЛОКАЛЬНОЕ ВЕБ-ДЕМО', noUpload:'Файлы остаются на устройстве', glassEmail:'Написать в Glasswave · GlasWave@proton.me', playerTitle:'Твоя временная библиотека', trackCount:'песен', pickTracks:'Выбрать музыку', pickCopy:'Выбери аудиофайлы на устройстве. Они используются только в этой вкладке браузера.', emptyTracks:'Плейлист пуст. Выбери аудиофайлы, чтобы начать.', nothingPlaying:'Ничего не играет', unknownArtist:'Неизвестный исполнитель', repeatAll:'Повтор всего', repeatOff:'Повтор выключен', prev:'Предыдущая', play:'Играть', pause:'Пауза', next:'Следующая', seek:'Перемотка', volume:'Громкость', releaseStatus:'Статус релиза', playerStatus:'Музыка остаётся локально. Демо не отправляет файлы на сервер.',
+      v8vKicker:'V8V / ROBLOX STUDIO', v8vTitle:'Хоррор с <em>характером.</em>', v8vCopy:'V8V — наши хоррор-проекты для Roblox, системы лобби, атмосфера, интерактивный интерфейс и эксперименты с игровыми механиками.', v8vBadge:'РАЗРАБОТКА ИГР', v8vWord:'V8V', v8vSub:'ХОРРОР · СИСТЕМЫ · UI', contactV8v:'Написать в Handy Labs о V8V', workInProgress:'В РАЗРАБОТКЕ',
+      vortexKicker:'VORTEX / ВЕБ', vortexTitle:'Веб-проект <em>в движении.</em>', vortexCopy:'Vortex — веб-проект с приоритетом мобильных устройств, собственным визуальным стилем и продуманными взаимодействиями.', vortexBadge:'ВЕБ · В РАЗРАБОТКЕ', vortexWord:'VORTEX', vortexSub:'ВЕБ · МОБИЛЬНЫЙ UI', contactVortex:'Написать в Handy Labs о Vortex',
+      releasesKicker:'HANDY LABS / РЕЛИЗЫ', releasesTitle:'Только настоящие <em>релизы.</em>', releasesCopy:'Загрузки появятся после проверки сборок. Никаких фальшивых EXE и непонятных установщиков.', windows:'Glasswave · Windows', testing:'EXE тестируется — публичной загрузки пока нет', web:'Glasswave · Веб', available:'Локальное браузерное демо доступно', roblox:'V8V · Roblox Studio', progress:'Проекты в разработке', future:'Android · macOS · Linux', planned:'В планах, ещё не выпущено', contactRelease:'Связаться с Handy Labs',
+      loadingGlass:'Подготавливаем Liquid Glass…', glassFallback:'Используется встроенный запасной эффект стекла.', added:n=>'Добавлено песен: '+n+'.', noAudio:'Поддерживаемые аудиофайлы не найдены.', cantPlay:'Браузер не смог воспроизвести этот файл.', needTracks:'Сначала выбери музыку.', notification:'Уведомления о релизах пока не подключены.', playing:'Играет', paused:'Пауза'
+    }
+  };
+  const text = key => copy[state.lang][key] ?? copy.en[key] ?? key;
+  function notice(message,success=true){const el=document.getElementById('hlNewNotice');el.textContent=message;el.dataset.kind=success?'success':'error';el.classList.add('show');clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
+  function bars(count){let out='';for(let i=0;i<count;i++){let h=12+Math.round(Math.abs(Math.sin(i*.71))*39);out+='<i style="--h:'+h+'px;--d:'+(-((i%9)*.085)).toFixed(2)+'s"></i>';}return out;}
+  function feature(word,top,bottom){return '<div class="hl-feature"><div class="hl-feature-top"><span>'+top+'</span><span>'+text('status')+'</span></div><div class="hl-feature-word">'+word+'</div><div class="hl-feature-bars" aria-hidden="true">'+bars(39)+'</div><div class="hl-feature-bottom"><span>'+bottom+'</span><span>HANDY LABS / 01</span></div></div>';}
+  function overviewView(){return '<div class="hl-content"><div class="hl-grid"><div><div class="hl-kicker"><span class="hl-kicker-line"></span>'+text('overviewKicker')+'</div><h1 class="hl-title">'+text('overviewTitle')+'</h1><p class="hl-copy">'+text('overviewCopy')+'</p><div class="hl-cta-row"><button class="hl-cta hl-cta-primary" id="hlOpenGlasswave">'+text('openGlasswave')+' <span>↗</span></button><button class="hl-cta hl-cta-secondary" type="button" data-copy-email="HandyLab@proton.me">'+text('contactHandy')+'</button></div><div class="hl-meta-line"><span><i class="hl-status-bar"></i>'+text('overviewFoot')+'</span></div></div>'+feature(text('focusTitle'),text('focus'),'AUDIO / PLAYER')+'</div><div style="margin-top:24px;color:var(--hl-soft);font-size:10px;letter-spacing:.04em">'+text('overviewFoot2')+' · <a class="hl-domain-link" href="https://handylab.ru/" target="_blank" rel="noopener noreferrer">handylab.ru ↗</a></div></div>';}
+  function glasswaveView(){return '<div class="hl-content"><div class="hl-screen-head"><div><div class="hl-kicker"><span class="hl-kicker-line"></span>'+text('glassKicker')+'</div><h1 class="hl-title">'+text('glassTitle')+'</h1></div><p class="hl-copy">'+text('glassCopy')+'</p></div><div class="hl-glasswave-grid"><section class="hl-about"><span class="hl-project-chip"><b></b>'+text('localDemo')+'</span><h2 class="hl-about-title">Glasswave</h2><p class="hl-about-copy">'+text('glassCopy')+'</p><button class="hl-contact-link" type="button" data-copy-email="GlasWave@proton.me">'+text('glassEmail')+'</button><a class="hl-info-link" href="#" id="hlReleaseFromGlass">'+text('releaseStatus')+' ↗</a></section><section class="hl-player"><div class="hl-player-head"><strong>'+text('playerTitle')+'</strong><small id="hlTrackCount">0 '+text('trackCount')+'</small></div><div class="hl-file-box" id="hlDrop"><div><strong>'+text('pickTracks')+'</strong><p>'+text('pickCopy')+'</p></div><button class="hl-cta hl-cta-primary hl-file-button" id="hlPickAudio" type="button">'+text('pickTracks')+'</button><input class="hl-hidden-input" id="hlAudioInput" type="file" accept="audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac,.opus,.wma" multiple></div><div class="hl-track-list" id="hlTrackList"><div class="hl-empty">'+text('emptyTracks')+'</div></div><div class="hl-now"><div class="hl-cover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h2l2-5 3 10 3-13 3 16 2-8h3"/></svg></div><div class="hl-now-text"><strong id="hlNowTitle">'+text('nothingPlaying')+'</strong><span id="hlNowArtist">Handy Labs · Glasswave</span></div><div class="hl-controls"><button class="hl-control" id="hlPrev" aria-label="'+text('prev')+'">|◀</button><button class="hl-control hl-control-play" id="hlPlay" aria-label="'+text('play')+'">▶</button><button class="hl-control" id="hlNext" aria-label="'+text('next')+'">▶|</button></div></div><div class="hl-timeline"><span id="hlCurrent">0:00</span><input id="hlSeek" type="range" min="0" max="1000" value="0" aria-label="'+text('seek')+'"><span id="hlDuration">0:00</span></div><div class="hl-player-bottom"><button class="hl-control" id="hlRepeat" aria-pressed="true">↻ '+text('repeatAll')+'</button><label class="hl-volume"><span>'+text('volume')+'</span><input id="hlVolume" type="range" min="0" max="100" value="75" aria-label="'+text('volume')+'"><span id="hlVolumeText">75%</span></label></div><div style="color:var(--hl-soft);font-size:9px;line-height:1.55">'+text('playerStatus')+'</div></section></div></div>';}
+  function v8vView(){return '<div class="hl-content"><div class="hl-grid"><div><div class="hl-kicker"><span class="hl-kicker-line"></span>'+text('v8vKicker')+'</div><h1 class="hl-title">'+text('v8vTitle')+'</h1><p class="hl-copy">'+text('v8vCopy')+'</p><div class="hl-cta-row"><button class="hl-cta hl-cta-primary" type="button" data-copy-email="HandyLab@proton.me">'+text('contactV8v')+' ↗</button></div><div class="hl-meta-line"><span><i class="hl-status-bar"></i>'+text('workInProgress')+'</span></div></div><div class="hl-v8v-visual"><div class="hl-v8v-top"><span>V8V / STUDIO</span><span class="hl-v8v-tag">'+text('v8vBadge')+'</span></div><div><div class="hl-v8v-word">V8V</div><div class="hl-v8v-index"><span>HORROR</span><span>LOBBY SYSTEMS</span><span>UI / FX</span></div></div><div class="hl-v8v-bottom"><span>ROBLOX STUDIO</span><span>BUILD / 001</span></div></div></div></div>';}
+  function releasesView(){return '<div class="hl-content"><div class="hl-grid"><div><div class="hl-kicker"><span class="hl-kicker-line"></span>'+text('releasesKicker')+'</div><h1 class="hl-title">'+text('releasesTitle')+'</h1><p class="hl-copy">'+text('releasesCopy')+'</p><div class="hl-cta-row"><button class="hl-cta hl-cta-secondary" type="button" data-copy-email="HandyLab@proton.me">'+text('contactRelease')+'</button></div></div><div><div class="hl-status-grid"><div class="hl-status-item"><strong>'+text('windows')+'</strong><span>'+text('testing')+'</span></div><div class="hl-status-item"><strong>'+text('web')+'</strong><span>'+text('available')+'</span></div><div class="hl-status-item"><strong>'+text('roblox')+'</strong><span>'+text('progress')+'</span></div><div class="hl-status-item"><strong>'+text('future')+'</strong><span>'+text('planned')+'</span></div></div></div></div></div>';}
+  function setScene(){const palette={overview:['rgba(79,223,198,.2)','rgba(115,151,255,.2)'],glasswave:['rgba(74,238,198,.22)','rgba(123,178,255,.23)'],v8v:['rgba(244,113,156,.18)','rgba(126,119,255,.2)'],vortex:['rgba(127,148,255,.2)','rgba(88,229,213,.18)'],releases:['rgba(105,207,212,.18)','rgba(153,170,255,.2)']}[state.project];root.style.setProperty('--hl-scene-a',palette[0]);root.style.setProperty('--hl-scene-b',palette[1]);}
+  function renderProject(){const views={overview:overviewView,glasswave:glasswaveView,v8v:v8vView,releases:releasesView};panel.innerHTML=views[state.project]();setScene();tabs.forEach((tab,i)=>{const active=tab.dataset.hlProject===state.project;tab.setAttribute('aria-pressed',String(active));if(active)document.getElementById('hlNavRoot').style.setProperty('--hl-slide',String(i));});document.documentElement.dataset.handyProject=state.project;if(state.project==='glasswave')bindPlayer();else{const open=document.getElementById('hlOpenGlasswave');if(open)open.addEventListener('click',()=>selectProject('glasswave'));}const releaseLink=document.getElementById('hlReleaseFromGlass');if(releaseLink)releaseLink.addEventListener('click',e=>{e.preventDefault();selectProject('releases');});}
+  function selectProject(id){if(!['overview','glasswave','v8v','releases'].includes(id))return;state.project=id;renderProject();}
+  panel.addEventListener('click',async event=>{const trigger=event.target.closest('[data-copy-email]');if(!trigger)return;event.preventDefault();const address=trigger.dataset.copyEmail;let copied=false;try{await navigator.clipboard.writeText(address);copied=true;}catch(e){const field=document.createElement('textarea');field.value=address;field.readOnly=true;field.style.position='fixed';field.style.opacity='0';document.body.append(field);field.select();try{copied=document.execCommand('copy');}catch(error){}field.remove();}if(copied){playUISound('copy');notice((state.lang==='ru'?'Скопировано: ':'Copied: ')+address,true);}else notice(state.lang==='ru'?'Не удалось скопировать адрес.':'Could not copy the address.',false);});
+  function formatTime(v){if(!Number.isFinite(v)||v<0)return '0:00';return Math.floor(v/60)+':'+String(Math.floor(v%60)).padStart(2,'0');}
+  function filenameInfo(name){const stem=name.replace(/\.[^.]+$/,'').replace(/[_]+/g,' ').trim();const match=stem.match(/^(.{1,70}?)\s+-\s+(.{1,120})$/);return match?{title:match[2].trim(),artist:match[1].trim()}:{title:stem||name,artist:text('unknownArtist')};}
+  function renderTracks(){const list=document.getElementById('hlTrackList');if(!list)return;const counter=document.getElementById('hlTrackCount');counter.textContent=state.tracks.length+' '+text('trackCount');list.replaceChildren();if(!state.tracks.length){const empty=document.createElement('div');empty.className='hl-empty';empty.textContent=text('emptyTracks');list.append(empty);return;}state.tracks.forEach((track,i)=>{const button=document.createElement('button');button.type='button';button.className='hl-track'+(i===state.index?' active':'');const art=document.createElement('span');art.className='hl-track-art';art.textContent=(track.title[0]||'♪').toUpperCase();const body=document.createElement('span');body.className='hl-track-text';const title=document.createElement('strong');title.textContent=track.title;const artist=document.createElement('span');artist.textContent=track.artist;body.append(title,artist);const dur=document.createElement('span');dur.className='hl-track-time';dur.textContent=Number.isFinite(track.duration)?formatTime(track.duration):'--:--';button.append(art,body,dur);button.addEventListener('click',()=>playTrack(i,true));list.append(button);});}
+  function setPlayState(playing){const b=document.getElementById('hlPlay');if(!b)return;b.textContent=playing?'Ⅱ':'▶';b.setAttribute('aria-label',playing?text('pause'):text('play'));}
+  function updateCurrent(){const track=state.tracks[state.index];if(!track)return;const title=document.getElementById('hlNowTitle');const artist=document.getElementById('hlNowArtist');if(title)title.textContent=track.title;if(artist)artist.textContent=track.artist;renderTracks();}
+  async function playTrack(index,autoplay){if(!state.tracks.length){notice(text('needTracks'));return;}state.index=(index+state.tracks.length)%state.tracks.length;audio.src=state.tracks[state.index].url;audio.load();updateCurrent();if(autoplay){try{await audio.play();setPlayState(true);}catch(e){setPlayState(false);notice(text('cantPlay'));}}}
+  function addFiles(fileList){const accepted=Array.from(fileList||[]).filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|flac|ogg|m4a|aac|opus|wma|aiff?)$/i.test(f.name));if(!accepted.length){notice(text('noAudio'));return;}accepted.forEach(file=>{const parsed=filenameInfo(file.name);state.tracks.push({file:file,url:URL.createObjectURL(file),title:parsed.title,artist:parsed.artist,duration:NaN});});renderTracks();notice(text('added')(accepted.length));if(state.index<0)playTrack(0,true);}
+  function bindPlayer(){renderTracks();const input=document.getElementById('hlAudioInput');document.getElementById('hlPickAudio').addEventListener('click',()=>input.click());input.addEventListener('change',()=>{addFiles(input.files);input.value='';});const drop=document.getElementById('hlDrop');['dragenter','dragover'].forEach(name=>drop.addEventListener(name,e=>{e.preventDefault();drop.style.background='rgba(120,222,218,.1)';}));['dragleave','drop'].forEach(name=>drop.addEventListener(name,e=>{e.preventDefault();drop.style.background='';}));drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));document.getElementById('hlPlay').addEventListener('click',async()=>{if(state.index<0){if(state.tracks.length)await playTrack(0,true);else notice(text('needTracks'));return;}if(audio.paused){try{await audio.play();setPlayState(true);}catch(e){notice(text('cantPlay'));}}else audio.pause();});document.getElementById('hlPrev').addEventListener('click',()=>{if(!state.tracks.length)return notice(text('needTracks'));if(audio.currentTime>3){audio.currentTime=0;return;}playTrack(state.index-1,true);});document.getElementById('hlNext').addEventListener('click',()=>{if(!state.tracks.length)return notice(text('needTracks'));playTrack(state.index+1,true);});const repeat=document.getElementById('hlRepeat');const syncRepeat=()=>{repeat.textContent='↻ '+text(state.repeat?'repeatAll':'repeatOff');repeat.setAttribute('aria-pressed',String(state.repeat));};syncRepeat();repeat.addEventListener('click',()=>{state.repeat=!state.repeat;syncRepeat();});const volume=document.getElementById('hlVolume');volume.value=Math.round(audio.volume*100);document.getElementById('hlVolumeText').textContent=volume.value+'%';volume.addEventListener('input',()=>{audio.volume=Number(volume.value)/100;document.getElementById('hlVolumeText').textContent=volume.value+'%';});const seek=document.getElementById('hlSeek');seek.addEventListener('input',()=>{state.seeking=true;if(Number.isFinite(audio.duration))document.getElementById('hlCurrent').textContent=formatTime(audio.duration*Number(seek.value)/1000);});seek.addEventListener('change',()=>{if(Number.isFinite(audio.duration))audio.currentTime=audio.duration*Number(seek.value)/1000;state.seeking=false;});}
+  audio.volume=.75;audio.addEventListener('loadedmetadata',()=>{if(state.index>=0&&state.tracks[state.index]){state.tracks[state.index].duration=audio.duration;renderTracks();}const d=document.getElementById('hlDuration');if(d)d.textContent=formatTime(audio.duration);});audio.addEventListener('timeupdate',()=>{const seek=document.getElementById('hlSeek');if(seek&&!state.seeking&&Number.isFinite(audio.duration)&&audio.duration>0)seek.value=String(Math.round(audio.currentTime/audio.duration*1000));const c=document.getElementById('hlCurrent');const d=document.getElementById('hlDuration');if(c)c.textContent=formatTime(audio.currentTime);if(d)d.textContent=formatTime(audio.duration);});audio.addEventListener('play',()=>setPlayState(true));audio.addEventListener('pause',()=>setPlayState(false));audio.addEventListener('ended',()=>{if(state.index<state.tracks.length-1)playTrack(state.index+1,true);else if(state.repeat&&state.tracks.length)playTrack(0,true);else setPlayState(false);});audio.addEventListener('error',()=>{if(state.index>=0)notice(text('cantPlay'));});
+  function renderThemeMenu(){const labels=state.lang==='ru'?{auto:'Система',light:'Светлая',dark:'Тёмная'}:{auto:'System',light:'Light',dark:'Dark'};const symbols={auto:'◐',light:'☼',dark:'◑'};document.getElementById('hlNewThemeLabel').textContent=symbols[state.theme]+' '+labels[state.theme];themeMenu.querySelectorAll('[data-hl-theme]').forEach(button=>{const mode=button.dataset.hlTheme;button.setAttribute('aria-checked',String(mode===state.theme));button.querySelector('[data-hl-theme-label]').textContent=labels[mode];});}
+  function closeThemeMenu(){themeToggle.setAttribute('aria-expanded','false');themeMenu.classList.remove('open');window.setTimeout(()=>{if(!themeMenu.classList.contains('open'))themeMenu.hidden=true;},200);}
+  function openThemeMenu(){themeMenu.hidden=false;themeToggle.setAttribute('aria-expanded','true');requestAnimationFrame(()=>themeMenu.classList.add('open'));}
+  function applyLanguage(){document.documentElement.lang=state.lang;langButton.textContent=state.lang==='ru'?'EN':'RU';document.getElementById('hlNewBrandSub').textContent=text('brandSub');tabs.forEach(tab=>{const key=tab.querySelector('[data-hl-label]')?.dataset.hlLabel;if(key)tab.querySelector('[data-hl-label]').textContent=text(key);});renderProject();renderThemeMenu();}
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{playUISound('select');selectProject(tab.dataset.hlProject);}));
+  document.getElementById('hlNewHome').addEventListener('click',e=>{e.preventDefault();selectProject('overview');});
+  langButton.addEventListener('click',()=>{state.lang=state.lang==='ru'?'en':'ru';applyLanguage();});
+  try{state.theme=localStorage.getItem('handylabs-theme')||'auto';}catch(e){}if(!['auto','light','dark'].includes(state.theme))state.theme='auto';root.dataset.theme=state.theme;renderThemeMenu();
+  themeToggle.addEventListener('click',()=>{if(themeToggle.getAttribute('aria-expanded')==='true')closeThemeMenu();else openThemeMenu();});
+  themeMenu.querySelectorAll('[data-hl-theme]').forEach(button=>button.addEventListener('click',()=>{state.theme=button.dataset.hlTheme;root.dataset.theme=state.theme;try{localStorage.setItem('handylabs-theme',state.theme);}catch(e){}renderThemeMenu();closeThemeMenu();playUISound('select');}));
+  document.addEventListener('click',event=>{if(!event.target.closest('.hl-theme-wrap'))closeThemeMenu();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeThemeMenu();});
+  renderProject();applyLanguage();document.documentElement.dataset.handyLiquidGlass='loading';
+  const cdn='https://cdn.jsdelivr.net/npm/@ybouane/liquidglass@1.0.3/dist/index.js';
+  const setConfig=(el,config)=>{el.dataset.config=JSON.stringify(config);};
+  (async()=>{try{const mod=await import(cdn);const LiquidGlass=mod.LiquidGlass;const shared={blurAmount:.12,refraction:.82,chromAberration:.018,edgeHighlight:.09,specular:.035,fresnel:.68,distortion:.008,cornerRadius:28,zRadius:20,opacity:.54,saturation:.08,tintStrength:.16,brightness:-.045,shadowOpacity:.16,shadowSpread:14,shadowOffsetY:3};setConfig(indicator,{blurAmount:.04,refraction:.9,chromAberration:.012,edgeHighlight:.13,specular:.035,fresnel:.7,cornerRadius:15,zRadius:17,opacity:.72,saturation:.08,tintStrength:.16,brightness:-.035,shadowOpacity:.11,shadowSpread:8,shadowOffsetY:2,button:true});setConfig(panel,shared);await Promise.all([LiquidGlass.init({root:navRoot,glassElements:[indicator],defaults:shared}),LiquidGlass.init({root:panelRoot,glassElements:[panel],defaults:shared})]);document.documentElement.dataset.handyLiquidGlass='ready';}catch(err){document.documentElement.dataset.handyLiquidGlass='fallback';notice(text('glassFallback'));console.warn('LiquidGlass CDN unavailable; using CSS glass fallback.',err);}})();
+  window.addEventListener('beforeunload',()=>state.tracks.forEach(track=>URL.revokeObjectURL(track.url)));
+})();
+</script>
+<header class="site-header">
+  <div class="wrap">
+    <div class="top-row">
+      <a class="brand" href="#top" aria-label="Handy Labs home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h3l2.1-6 4.1 12 3.1-9 2.1 3H21"/></svg></span>
+        <span>Handy Labs<small>PROJECTS · APPS · EXPERIMENTS</small></span>
+      </a>
+      <div class="top-actions">
+        <button class="mini-btn" id="langBtn" type="button" aria-label="Switch language">RU</button>
+        <label for="themeMode" class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Theme</label>
+        <select class="glass-select" id="themeMode" aria-label="Color theme">
+          <option value="auto">◐ System</option><option value="light">☼ Light</option><option value="dark">◑ Dark</option>
+        </select>
+      </div>
+    </div>
+    <div class="project-scroll" aria-label="Choose a project">
+      <div class="project-picker" id="projectPicker" style="--slide:0">
+        <img class="picker-scene" src="https://cdn.jsdelivr.net/gh/ybouane/liquidglass@main/site/background-3.avif" alt="" aria-hidden="true" crossorigin="anonymous" referrerpolicy="no-referrer">
+        <span class="picker-indicator" aria-hidden="true"></span>
+        <button class="project-tab" type="button" data-project="overview" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"/></svg><span data-i18n="tabOverview">Overview</span></button>
+        <button class="project-tab" type="button" data-project="glasswave" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h2l2-5 3 10 3-13 3 16 2-8h3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Glasswave</span></button>
+        <button class="project-tab" type="button" data-project="v8v" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7 7 17h2l3-8 3 8h2l3-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span>V8V Studio</span></button>
+        <button class="project-tab" type="button" data-project="vortex" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c5 0 9 3 9 8s-4 10-9 10-9-5-9-10 4-8 9-8Z"/><path d="M4 9c3 2 13 2 16 0M6 17c3-2 9-2 12 0"/></svg><span>Vortex</span></button>
+        <button class="project-tab" type="button" data-project="releases" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="tabReleases">Releases</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+<main id="top" data-active-project="overview">
+  <section class="hero wrap">
+    <div class="hero-shell glass" id="heroShell">
+      <div class="hero-copy" id="heroCopy">
+        <div class="eyebrow"><span class="live-dot"></span><span id="heroEyebrow">HANDY LABS / INDEPENDENT PROJECTS</span></div>
+        <h1 id="heroTitle">A home for things we <span class="gradient-text">build.</span></h1>
+        <p class="hero-description" id="heroDescription">Games, apps and curious experiments — collected under one roof. Explore the projects, try Glasswave in your browser, and follow what is coming next.</p>
+        <div class="hero-actions"><a class="btn btn-primary" id="heroCta" href="#glasswave"><span id="heroCtaText">Open Glasswave</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn btn-secondary hero-secondary" href="mailto:HandyLab@proton.me" id="heroSecondary"><span data-i18n="secondaryCta">Contact Handy Labs</span></a></div>
+        <div class="hero-note"><span>✦</span><span id="heroNote">Independent projects. One shared home.</span></div>
+      </div>
+      <div class="hero-visual" id="heroVisual" aria-label="Project preview">
+        <img class="hero-glass-scene" src="https://cdn.jsdelivr.net/gh/ybouane/liquidglass@main/site/background-3.avif" alt="" aria-hidden="true" crossorigin="anonymous" referrerpolicy="no-referrer">
+        <div class="hero-glass-tint" aria-hidden="true"></div>
+        <div class="project-glass-card" id="projectGlassCard">
+          <div class="card-topline"><span id="visualKicker">HANDY LABS / LAB</span><span class="status-pill" id="visualStatus">IN PROGRESS</span></div>
+          <div class="card-art" id="visualArt"><div class="art-logo">HL</div></div>
+          <div class="card-bottom"><div><strong id="visualTitle">Ideas in motion</strong><span id="visualSubtitle">Apps · Games · Web</span></div><div class="card-mark" id="visualMark">✦</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="projects">
+    <div class="section-heading"><div><div class="kicker" data-i18n="projectsKicker">THE PROJECT SPACE</div><h2 data-i18n="projectsTitle">One studio. Many directions.</h2></div><p class="section-lead" data-i18n="projectsLead">Pick a project using the glass slider above, or explore the project cards below. Work in progress is clearly marked.</p></div>
+    <div class="projects-grid">
+      <article class="project-card glass" data-open-project="glasswave" tabindex="0" role="button" aria-label="Open Glasswave project"><div class="project-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h2l2-5 3 10 3-13 3 16 2-8h3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Glasswave</h3><p data-i18n="glassCardCopy">A Liquid Glass music player for local libraries, custom playlists, and expressive audio visuals.</p><div class="card-footer"><span class="tag" data-i18n="glassCardTag">WINDOWS · WEB DEMO</span><button class="arrow-btn" type="button" aria-label="Open Glasswave">↗</button></div></article>
+      <article class="project-card glass" data-open-project="v8v" tabindex="0" role="button" aria-label="Open V8V Studio project"><div class="project-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7 7 17h2l3-8 3 8h2l3-10" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>V8V · Roblox Studio</h3><p data-i18n="v8vCardCopy">Horror games, interactive interfaces, lobbies and experiments built for Roblox.</p><div class="card-footer"><span class="tag" data-i18n="v8vCardTag">GAME DEVELOPMENT</span><button class="arrow-btn" type="button" aria-label="Open V8V">↗</button></div></article>
+      <article class="project-card glass" data-open-project="vortex" tabindex="0" role="button" aria-label="Open Vortex project"><div class="project-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c5 0 9 3 9 8s-4 10-9 10-9-5-9-10 4-8 9-8Z"/><path d="M4 9c3 2 13 2 16 0M6 17c3-2 9-2 12 0"/></svg></div><h3>Vortex</h3><p data-i18n="vortexCardCopy">A phone-first web project with its own visual identity and a focus on clean interaction.</p><div class="card-footer"><span class="tag" data-i18n="vortexCardTag">WEB · IN DEVELOPMENT</span><button class="arrow-btn" type="button" aria-label="Open Vortex">↗</button></div></article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="glasswave">
+    <div class="section-heading"><div><div class="kicker" data-i18n="glassKicker">FEATURED PROJECT · MUSIC</div><h2 data-i18n="glassHeading">Meet Glasswave.</h2></div><p class="section-lead" data-i18n="glassLead">Test a simple browser player here. Files stay on your device in this tab; this preview does not upload tracks.</p></div>
+      <div class="glasswave-layout">
+      <img class="glasswave-scene" src="https://cdn.jsdelivr.net/gh/ybouane/liquidglass@main/site/background-3.avif" alt="" aria-hidden="true" crossorigin="anonymous" referrerpolicy="no-referrer">
+      <div class="glasswave-scene-tint" aria-hidden="true"></div>
+      <div class="glasswave-intro glass"><span class="local-chip"><span class="live-dot"></span><span data-i18n="localDemo">LOCAL BROWSER DEMO</span></span><h3 data-i18n-html="glassIntroTitle">Your library.<br><span class="gradient-text">Your atmosphere.</span></h3><p data-i18n="glassIntroCopy">Glasswave is being built for playlists, personalized artwork, smooth controls, Liquid Glass visuals and a focused listening experience. The Windows installer is not published yet.</p><a href="#releases" class="btn btn-secondary"><span data-i18n="checkReleases">Check release status</span> ↗</a><div style="margin-top:24px"><span class="local-chip">● <span data-i18n="noUpload">No music upload</span></span></div><a class="glass-contact-link" href="mailto:GlasWave@proton.me"><span data-i18n="glassContact">Contact Glasswave · GlasWave@proton.me</span></a></div>
+      <div class="music-player glass">
+        <div class="player-head"><strong>Glasswave / Web demo</strong><span id="libraryCount">0 tracks</span></div>
+        <div class="dropzone" id="dropzone"><div><strong data-i18n="dropTitle">Bring your own music</strong><p data-i18n="dropCopy">Choose audio files from your device to build a temporary playlist.</p></div><button id="chooseFiles" class="btn btn-primary file-btn" type="button" data-i18n="chooseTracks">Choose tracks</button><input id="audioFiles" type="file" accept="audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac,.opus,.wma" multiple hidden></div>
+        <div class="track-list" id="trackList"><div class="empty-library" data-i18n="emptyLibrary">Your temporary library is empty. Choose a few tracks to try it.</div></div>
+        <div class="now-playing"><div class="now-art"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h2l2-5 3 10 3-13 3 16 2-8h3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="now-meta"><strong id="nowTitle" data-i18n="nothingPlaying">Nothing playing</strong><span id="nowArtist">Handy Labs · Glasswave</span></div><div class="transport"><button id="prevBtn" type="button" aria-label="Previous track">|◀</button><button class="primary-play" id="playBtn" type="button" aria-label="Play"><svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button id="nextBtn" type="button" aria-label="Next track">▶|</button></div></div>
+        <div class="timeline"><span id="currentTime">0:00</span><input id="seekInput" type="range" min="0" max="1000" value="0" aria-label="Seek"><span id="durationTime">0:00</span></div>
+        <div class="player-bottom"><button class="mini-btn" type="button" id="repeatBtn" aria-pressed="true">↻ <span data-i18n="repeatAll">Repeat all</span></button><label class="volume">◖ <input id="volumeInput" type="range" min="0" max="100" value="75" aria-label="Volume"><span id="volumeText">75%</span></label></div>
+        <audio id="audio" preload="metadata"></audio>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="releases">
+    <img class="release-scene" src="https://cdn.jsdelivr.net/gh/ybouane/liquidglass@main/site/background-3.avif" alt="" aria-hidden="true" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <div class="release-scene-tint" aria-hidden="true"></div>
+    <div class="release-panel glass">
+      <div><div class="kicker" data-i18n="releaseKicker">DOWNLOADS & ROADMAP</div><h2 data-i18n-html="releaseHeading">Real releases.<br><span class="gradient-text">No fake buttons.</span></h2><p class="release-copy" data-i18n="releaseCopy">Glasswave's Windows EXE is still being tested. The download will be added here after the installer is verified. Android, Linux and macOS are future plans, not releases yet.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px"><button class="btn btn-primary" id="releaseButton" type="button"><span data-i18n="releaseUpdates">Release updates</span> ↗</button><a class="btn btn-secondary" href="#projects"><span data-i18n="moreProjects">Explore projects</span></a></div><p id="releaseNotice" class="release-copy" style="font-size:10px;margin-top:12px" aria-live="polite" data-i18n="noMailBackend">This preview does not collect email addresses or send notifications.</p></div>
+      <div class="release-grid"><div class="release-item"><strong>Glasswave · Windows</strong><span data-i18n="testing">EXE in testing</span></div><div class="release-item"><strong>Glasswave · Web</strong><span data-i18n="browserDemo">Local demo available</span></div><div class="release-item"><strong>V8V · Roblox</strong><span data-i18n="inDevelopment">In development</span></div><div class="release-item"><strong>Android / macOS / Linux</strong><span data-i18n="planned">Planned</span></div></div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="contact"><div class="contact-row glass"><div><div class="kicker" data-i18n="contactKicker">CONTACT</div><h2 data-i18n="contactHeading">Talk to Handy Labs.</h2></div><div class="contact-links"><a class="email-link" href="mailto:HandyLab@proton.me">HandyLab@proton.me ↗</a></div></div></section>
+</main>
+<footer class="footer"><div class="wrap footer-inner"><span class="footer-brand">Handy Labs <span style="color:var(--muted);font-weight:500">· Independent projects, one home.</span></span><span data-i18n="previewFoot">Interactive preview · Not published yet</span><span>Liquid Glass by <a href="https://github.com/ybouane/liquidglass" target="_blank" rel="noopener noreferrer">ybouane/liquidglass</a> · MIT</span><a href="#top" data-i18n="backTop">Back to top ↑</a></div></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const translations = {
+    en: {
+      tabOverview:'Overview', tabReleases:'Releases', secondaryCta:'Try Glasswave', projectsKicker:'THE PROJECT SPACE', projectsTitle:'One studio. Many directions.', projectsLead:'Pick a project using the glass slider above, or explore the project cards below. Work in progress is clearly marked.',
+      glassCardCopy:'A Liquid Glass music player for local libraries, custom playlists, and expressive audio visuals.',glassCardTag:'WINDOWS · WEB DEMO', v8vCardCopy:'Horror games, interactive interfaces, lobbies and experiments built for Roblox.',v8vCardTag:'GAME DEVELOPMENT',vortexCardCopy:'A phone-first web project with its own visual identity and a focus on clean interaction.',vortexCardTag:'WEB · IN DEVELOPMENT',glassKicker:'FEATURED PROJECT · MUSIC',glassHeading:'Meet Glasswave.',glassLead:'Test a simple browser player here. Files stay on your device in this tab; this preview does not upload tracks.',localDemo:'LOCAL BROWSER DEMO',glassIntroTitle:'Your library.<br><span class="gradient-text">Your atmosphere.</span>',glassIntroCopy:'Glasswave is being built for playlists, personalized artwork, smooth controls, Liquid Glass visuals and a focused listening experience. The Windows installer is not published yet.',checkReleases:'Check release status',noUpload:'No music upload',dropTitle:'Bring your own music',dropCopy:'Choose audio files from your device to build a temporary playlist.',chooseTracks:'Choose tracks',emptyLibrary:'Your temporary library is empty. Choose a few tracks to try it.',nothingPlaying:'Nothing playing',repeatAll:'Repeat all',releaseKicker:'DOWNLOADS & ROADMAP',releaseHeading:'Real releases.<br><span class="gradient-text">No fake buttons.</span>',releaseCopy:'Glasswave\'s Windows EXE is still being tested. The download will be added here after the installer is verified. Android, Linux and macOS are future plans, not releases yet.',releaseUpdates:'Release updates',moreProjects:'Explore projects',noMailBackend:'This preview does not collect email addresses or send notifications.',testing:'EXE in testing',browserDemo:'Local demo available',inDevelopment:'In development',planned:'Planned',contactKicker:'CONTACT',contactHeading:'Talk to Handy Labs.',previewFoot:'Interactive preview · Not published yet',backTop:'Back to top ↑',tracks:'tracks',track:'track',playing:'Playing',paused:'Paused',badFile:'This audio file could not be played in this browser.',noTracks:'Add a few tracks first.',noLibrary:'Your temporary library is empty. Choose a few tracks to try it.',releaseToast:'Release notifications are not connected in this preview. Email us instead.'
+    },
+    ru: {
+      tabOverview:'Обзор',tabReleases:'Релизы',secondaryCta:'Открыть Glasswave',projectsKicker:'НАШИ ПРОЕКТЫ',projectsTitle:'Одна студия. Много идей.',projectsLead:'Выбирай проект через стеклянный ползунок выше или открывай карточки ниже. Незаконченные разработки отмечены честно.',
+      glassCardCopy:'Музыкальный плеер в стиле Liquid Glass: локальная библиотека, плейлисты и визуализация звука.',glassCardTag:'WINDOWS · ВЕБ-ДЕМО',v8vCardCopy:'Хоррор-игры, интерактивные интерфейсы, лобби и эксперименты для Roblox.',v8vCardTag:'РАЗРАБОТКА ИГР',vortexCardCopy:'Мобильный веб-проект со своим стилем и акцентом на удобное взаимодействие.',vortexCardTag:'ВЕБ · В РАЗРАБОТКЕ',glassKicker:'ГЛАВНЫЙ ПРОЕКТ · МУЗЫКА',glassHeading:'Знакомься: Glasswave.',glassLead:'Попробуй простой веб-плеер. Файлы остаются на устройстве в этой вкладке — демо не загружает музыку на сервер.',localDemo:'ЛОКАЛЬНОЕ ВЕБ-ДЕМО',glassIntroTitle:'Твоя музыка.<br><span class="gradient-text">Твоя атмосфера.</span>',glassIntroCopy:'Мы разрабатываем Glasswave с плейлистами, обложками, плавным управлением и Liquid Glass. Установщик Windows пока не опубликован.',checkReleases:'Статус релиза',noUpload:'Музыка не загружается',dropTitle:'Добавь свою музыку',dropCopy:'Выбери аудиофайлы на компьютере, чтобы создать временный плейлист.',chooseTracks:'Выбрать песни',emptyLibrary:'Библиотека пока пуста. Выбери несколько песен для проверки.',nothingPlaying:'Ничего не играет',repeatAll:'Повтор плейлиста',releaseKicker:'ЗАГРУЗКИ И ПЛАНЫ',releaseHeading:'Настоящие релизы.<br><span class="gradient-text">Без фальшивых кнопок.</span>',releaseCopy:'EXE Glasswave для Windows пока тестируется. Ссылка появится после проверки установщика. Android, Linux и macOS — планы на будущее, это ещё не готовые релизы.',releaseUpdates:'Новости релиза',moreProjects:'Все проекты',noMailBackend:'Предпросмотр не собирает адреса и не отправляет уведомления.',testing:'EXE тестируется',browserDemo:'Доступно локальное демо',inDevelopment:'В разработке',planned:'В планах',contactKicker:'СВЯЗЬ',contactHeading:'Напиши в Handy Labs.',previewFoot:'Интерактивный предпросмотр · Ещё не опубликован',backTop:'Наверх ↑',tracks:'треков',track:'трек',playing:'Играет',paused:'Пауза',badFile:'Этот аудиофайл не удалось воспроизвести в браузере.',noTracks:'Сначала добавь музыку.',noLibrary:'Библиотека пуста. Выбери несколько песен для проверки.',releaseToast:'Уведомления о релизах пока не подключены. Напиши нам на почту.'
+    }
+  };
+  Object.assign(translations.en,{secondaryCta:'Contact Handy Labs',glassContact:'Contact Glasswave · GlasWave@proton.me'});
+  Object.assign(translations.ru,{secondaryCta:'Связаться с Handy Labs',glassContact:'Написать в Glasswave · GlasWave@proton.me'});
+  const projectData = {
+    overview: { en:{eyebrow:'HANDY LABS / INDEPENDENT PROJECTS',title:'A home for things we <span class="gradient-text">build.</span>',copy:'Games, apps and curious experiments — collected under one roof. Explore the projects, try Glasswave in your browser, and follow what is coming next.',cta:'Explore projects',href:'#projects',note:'Independent projects. One shared home.',kicker:'HANDY LABS / LAB',status:'IN PROGRESS',visualTitle:'Ideas in motion',visualSubtitle:'Apps · Games · Web',mark:'✦',art:'logo',logo:'HL'}, ru:{eyebrow:'HANDY LABS / НЕЗАВИСИМЫЕ ПРОЕКТЫ',title:'Дом для всего, что мы <span class="gradient-text">создаём.</span>',copy:'Игры, приложения и эксперименты — в одном месте. Изучай проекты, пробуй Glasswave в браузере и следи за будущими релизами.',cta:'Смотреть проекты',href:'#projects',note:'Независимые проекты. Один общий дом.',kicker:'HANDY LABS / LAB',status:'В РАЗРАБОТКЕ',visualTitle:'Идеи в движении',visualSubtitle:'Приложения · Игры · Веб',mark:'✦',art:'logo',logo:'HL'}},
+    glasswave:{en:{eyebrow:'FEATURED PROJECT / MUSIC',title:'Your music, <span class="gradient-text">refracted.</span>',copy:'A Liquid Glass music player with local libraries, custom playlists, animated audio visuals and a listening space designed around you.',cta:'Try web player',href:'#glasswave',note:'Local browser demo · no uploads',kicker:'GLASSWAVE / PLAYER',status:'IN DEVELOPMENT',visualTitle:'Glasswave',visualSubtitle:'Music · Playlists · Visuals',mark:'♫',art:'wave'},ru:{eyebrow:'ГЛАВНЫЙ ПРОЕКТ / МУЗЫКА',title:'Музыка в отражении <span class="gradient-text">стекла.</span>',copy:'Музыкальный плеер Liquid Glass с локальной библиотекой, плейлистами, анимированной визуализацией и своим настроением.',cta:'Попробовать веб-плеер',href:'#glasswave',note:'Локальное демо · без загрузки файлов',kicker:'GLASSWAVE / PLAYER',status:'В РАЗРАБОТКЕ',visualTitle:'Glasswave',visualSubtitle:'Музыка · Плейлисты · Визуалы',mark:'♫',art:'wave'}},
+    v8v:{en:{eyebrow:'ROBLOX / GAME DEVELOPMENT',title:'Horror built <span class="gradient-text">with intention.</span>',copy:'A home for V8V game experiments: horror experiences, lobby systems, atmospheric UI and prototypes made in Roblox Studio.',cta:'Explore Roblox work',href:'#projects',note:'Roblox projects are in development',kicker:'V8V / STUDIO',status:'IN DEVELOPMENT',visualTitle:'V8V Studio',visualSubtitle:'Horror · Systems · UI',mark:'V8',art:'logo',logo:'V8V'},ru:{eyebrow:'ROBLOX / РАЗРАБОТКА ИГР',title:'Хоррор, созданный <span class="gradient-text">с атмосферой.</span>',copy:'Место для экспериментов V8V: хоррор-игр, систем лобби, атмосферных интерфейсов и прототипов в Roblox Studio.',cta:'К Roblox-проектам',href:'#projects',note:'Roblox-проекты в разработке',kicker:'V8V / STUDIO',status:'В РАЗРАБОТКЕ',visualTitle:'V8V Studio',visualSubtitle:'Хоррор · Системы · UI',mark:'V8',art:'logo',logo:'V8V'}},
+    vortex:{en:{eyebrow:'WEB / EXPERIMENT',title:'A web experience <span class="gradient-text">in motion.</span>',copy:'Vortex is a phone-first web project with a distinct identity, careful interaction design and space to grow into something bigger.',cta:'Explore web projects',href:'#projects',note:'Web build · in development',kicker:'VORTEX / WEB',status:'IN DEVELOPMENT',visualTitle:'Vortex',visualSubtitle:'Web · Mobile-first · UI',mark:'◉',art:'logo',logo:'VX'},ru:{eyebrow:'ВЕБ / ЭКСПЕРИМЕНТ',title:'Веб-проект <span class="gradient-text">в движении.</span>',copy:'Vortex — веб-проект с приоритетом мобильных устройств, собственным стилем и продуманными взаимодействиями.',cta:'Смотреть веб-проекты',href:'#projects',note:'Веб-версия · в разработке',kicker:'VORTEX / WEB',status:'В РАЗРАБОТКЕ',visualTitle:'Vortex',visualSubtitle:'Веб · Mobile-first · UI',mark:'◉',art:'logo',logo:'VX'}},
+    releases:{en:{eyebrow:'RELEASES / DOWNLOADS',title:'Built with care. <span class="gradient-text">Released with proof.</span>',copy:'Follow the status of Glasswave and future Handy Labs tools. We will publish real installers only after testing them; no placeholder downloads.',cta:'View release roadmap',href:'#releases',note:'Verified downloads will be linked here',kicker:'HANDY LABS / RELEASES',status:'ROADMAP',visualTitle:'Release channel',visualSubtitle:'Verified builds only',mark:'↓',art:'logo',logo:'EXE'},ru:{eyebrow:'РЕЛИЗЫ / ЗАГРУЗКИ',title:'Сделано с заботой. <span class="gradient-text">Выпущено после проверки.</span>',copy:'Следи за Glasswave и будущими инструментами Handy Labs. Настоящие установщики появятся после тестирования — без фальшивых загрузок.',cta:'План релизов',href:'#releases',note:'Проверенные загрузки появятся здесь',kicker:'HANDY LABS / RELEASES',status:'ПЛАН РЕЛИЗОВ',visualTitle:'Канал релизов',visualSubtitle:'Только проверенные сборки',mark:'↓',art:'logo',logo:'EXE'}}
+  };
+  let language='en';
+  let activeProject='overview';
+  let repeatAll=true;
+  let tracks=[];
+  let current=-1;
+  let seeking=false;
+  const audio=$('#audio');
+  const fileInput=$('#audioFiles');
+  const toastEl=$('#toast');
+  let toastTimer;
+  function toast(message){toastEl.textContent=message;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2600);}
+  function applyLanguage(){ document.documentElement.lang=language; document.title=language==='ru'?'Handy Labs — Проекты, приложения и Glasswave':'Handy Labs — Projects, Apps & Glasswave'; $$('[data-i18n]').forEach(el=>{const key=el.dataset.i18n;if(translations[language][key]!==undefined)el.textContent=translations[language][key];}); $$('[data-i18n-html]').forEach(el=>{const key=el.dataset.i18nHtml;if(translations[language][key]!==undefined)el.innerHTML=translations[language][key];});$('#langBtn').textContent=language==='en'?'RU':'EN';renderActiveProject();renderTracks();$('#repeatBtn').querySelector('span').textContent=translations[language].repeatAll;}
+  function renderVisual(p){const art=$('#visualArt'); if(p.art==='wave'){art.innerHTML='<div class="wave" aria-hidden="true">'+Array.from({length:31},(_,i)=>`<i style="--h:${14+Math.abs(Math.sin(i*.73))*67}px;--d:${(i%11)*-.09}s"></i>`).join('')+'</div>';}else{art.innerHTML=`<div class="art-logo">${p.logo||'HL'}</div>`;}}
+  function renderActiveProject(){const p=projectData[activeProject][language];$('#heroEyebrow').textContent=p.eyebrow;$('#heroTitle').innerHTML=p.title;$('#heroDescription').textContent=p.copy;$('#heroCtaText').textContent=p.cta;$('#heroCta').href=p.href;if(activeProject==='overview')$('#heroCtaText').textContent=language==='ru'?'Открыть Glasswave':'Open Glasswave';if(['v8v','vortex','releases'].includes(activeProject))$('#heroCtaText').textContent=language==='ru'?'Вернуться к обзору':'Back to overview';$('#heroSecondary').querySelector('span').textContent=translations[language].secondaryCta;$('#heroNote').textContent=p.note;$('#visualKicker').textContent=p.kicker;$('#visualStatus').textContent=p.status;$('#visualTitle').textContent=p.visualTitle;$('#visualSubtitle').textContent=p.visualSubtitle;$('#visualMark').textContent=p.mark;renderVisual(p);$('#heroCopy').style.animation='none';$('#heroVisual').style.animation='none';requestAnimationFrame(()=>{ $('#heroCopy').style.animation='';$('#heroVisual').style.animation='';});document.documentElement.dataset.project=activeProject;document.querySelector('main').dataset.activeProject=activeProject;}
+  function selectProject(id){if(!projectData[id])return;activeProject=id;const tabs=$$('.project-tab');const b=$(`.project-tab[data-project="${id}"]`);const idx=tabs.indexOf(b);$('#projectPicker').style.setProperty('--slide',Math.max(0,idx));tabs.forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.project===id)));renderActiveProject();}
+  $$('.project-tab').forEach(b=>b.addEventListener('click',()=>selectProject(b.dataset.project)));
+  $('#heroCta').addEventListener('click',e=>{e.preventDefault();selectProject(activeProject==='overview'?'glasswave':'overview');});
+  $$('[data-open-project]').forEach(card=>{const open=()=>{const id=card.dataset.openProject;selectProject(id);if(id==='glasswave')$('#glasswave').scrollIntoView({behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'});};card.addEventListener('click',open);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});
+  $('#langBtn').addEventListener('click',()=>{language=language==='en'?'ru':'en';applyLanguage();});
+  const themeSelect=$('#themeMode'); let themeMode='auto'; try{themeMode=localStorage.getItem('handylabs-theme')||'auto';}catch(e){} if(!['auto','light','dark'].includes(themeMode))themeMode='auto'; themeSelect.value=themeMode;document.documentElement.dataset.theme=themeMode;
+  themeSelect.addEventListener('change',()=>{themeMode=themeSelect.value;document.documentElement.dataset.theme=themeMode;try{localStorage.setItem('handylabs-theme',themeMode);}catch(e){};});
+  function fmt(value){if(!Number.isFinite(value)||value<0)return '0:00';const m=Math.floor(value/60),s=Math.floor(value%60);return m+':'+String(s).padStart(2,'0');}
+  function parseFileName(name){const base=name.replace(/\.[^.]+$/,'').replace(/[_]+/g,' ').trim();const m=base.match(/^(.{1,70}?)\s+-\s+(.{1,120})$/);return m?{title:m[2].trim(),artist:m[1].trim()}:{title:base||name,artist:'Unknown artist'};}
+  function renderTracks(){const list=$('#trackList');list.replaceChildren();$('#libraryCount').textContent=`${tracks.length} ${translations[language].tracks}`;if(!tracks.length){const empty=document.createElement('div');empty.className='empty-library';empty.textContent=translations[language].emptyLibrary;list.append(empty);return;}tracks.forEach((track,i)=>{const row=document.createElement('button');row.type='button';row.className='track-row'+(i===current?' active':'');row.setAttribute('aria-label',`${track.title} by ${track.artist}`);const art=document.createElement('span');art.className='album-art';art.textContent=(track.title[0]||'♪').toUpperCase();const meta=document.createElement('span');meta.className='track-meta';const title=document.createElement('strong');title.textContent=track.title;const artist=document.createElement('span');artist.textContent=track.artist;meta.append(title,artist);const dur=document.createElement('span');dur.className='track-duration';dur.textContent=Number.isFinite(track.duration)?fmt(track.duration):'--:--';row.append(art,meta,dur);row.addEventListener('click',()=>playIndex(i,true));list.append(row);});}
+  function updateCurrent(){const t=tracks[current];if(!t)return;$('#nowTitle').textContent=t.title;$('#nowArtist').textContent=t.artist;renderTracks();}
+  async function playIndex(index,autoplay=true){if(!tracks.length){toast(translations[language].noTracks);return;}index=(index+tracks.length)%tracks.length;current=index;audio.src=tracks[current].url;audio.load();updateCurrent();if(autoplay){try{await audio.play();setPlayIcon(true);}catch(e){setPlayIcon(false);toast(translations[language].badFile);}}}
+  function setPlayIcon(playing){$('#playIcon').innerHTML=playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';$('#playBtn').setAttribute('aria-label',playing?'Pause':'Play');}
+  function addFiles(fileList){const files=Array.from(fileList).filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|flac|ogg|m4a|aac|opus|wma|aiff?)$/i.test(f.name));if(!files.length){toast(language==='ru'?'Не найдено аудиофайлов.':'No audio files found.');return;}files.forEach(file=>{const parsed=parseFileName(file.name);tracks.push({file,url:URL.createObjectURL(file),title:parsed.title,artist:parsed.artist,duration:NaN});});renderTracks();if(current<0)playIndex(0,true);toast(language==='ru'?`Добавлено файлов: ${files.length}`:`Added ${files.length} track${files.length===1?'':'s'}.`);}
+  $('#chooseFiles').addEventListener('click',()=>fileInput.click());fileInput.addEventListener('change',()=>{addFiles(fileInput.files);fileInput.value='';});
+  const dz=$('#dropzone');['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.style.borderColor='var(--accent)';dz.style.background='var(--glass-strong)';}));['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.style.borderColor='';dz.style.background='';}));dz.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  $('#playBtn').addEventListener('click',async()=>{if(current<0){if(tracks.length)await playIndex(0,true);else toast(translations[language].noTracks);return;}if(audio.paused){try{await audio.play();setPlayIcon(true);}catch(e){toast(translations[language].badFile);}}else{audio.pause();setPlayIcon(false);}});
+  $('#prevBtn').addEventListener('click',()=>{if(!tracks.length)return toast(translations[language].noTracks);if(audio.currentTime>3){audio.currentTime=0;return;}playIndex(current-1,true);});
+  $('#nextBtn').addEventListener('click',()=>{if(!tracks.length)return toast(translations[language].noTracks);playIndex(current+1,true);});
+  $('#repeatBtn').addEventListener('click',()=>{repeatAll=!repeatAll;$('#repeatBtn').setAttribute('aria-pressed',String(repeatAll));$('#repeatBtn').querySelector('span').textContent=repeatAll?(language==='ru'?'Повтор плейлиста':'Repeat all'):(language==='ru'?'Повтор выключен':'Repeat off');});
+  $('#volumeInput').addEventListener('input',e=>{audio.volume=Number(e.target.value)/100;$('#volumeText').textContent=e.target.value+'%';});audio.volume=.75;
+  audio.addEventListener('loadedmetadata',()=>{if(current>=0&&tracks[current]){tracks[current].duration=audio.duration;renderTracks();}$('#durationTime').textContent=fmt(audio.duration);});
+  audio.addEventListener('timeupdate',()=>{if(!seeking&&Number.isFinite(audio.duration)&&audio.duration>0)$('#seekInput').value=Math.round(audio.currentTime/audio.duration*1000);$('#currentTime').textContent=fmt(audio.currentTime);$('#durationTime').textContent=fmt(audio.duration);});
+  $('#seekInput').addEventListener('input',()=>{seeking=true;if(Number.isFinite(audio.duration))$('#currentTime').textContent=fmt(audio.duration*Number($('#seekInput').value)/1000);});$('#seekInput').addEventListener('change',()=>{if(Number.isFinite(audio.duration))audio.currentTime=audio.duration*Number($('#seekInput').value)/1000;seeking=false;});
+  audio.addEventListener('play',()=>setPlayIcon(true));audio.addEventListener('pause',()=>setPlayIcon(false));audio.addEventListener('ended',()=>{if(current<tracks.length-1)playIndex(current+1,true);else if(repeatAll)playIndex(0,true);else setPlayIcon(false);});audio.addEventListener('error',()=>{if(current>=0)toast(translations[language].badFile);});
+  $('#releaseButton').addEventListener('click',()=>{ $('#releaseNotice').textContent=translations[language].releaseToast;toast(translations[language].releaseToast);});
+  window.addEventListener('beforeunload',()=>tracks.forEach(t=>URL.revokeObjectURL(t.url)));
+  applyLanguage();
+})();
+</script>
+<script type="module">
+(() => {
+  const cdn = 'https://cdn.jsdelivr.net/npm/@ybouane/liquidglass/dist/index.js';
+  const config = (element, options) => { element.dataset.config = JSON.stringify(options); };
+  const initInstance = async (LiquidGlass, root, elements, defaults) => {
+    const glassElements = elements.filter(element => element && element.parentElement === root);
+    if (!root || !glassElements.length || root.getBoundingClientRect().width < 1 || root.getBoundingClientRect().height < 1) {
+      if (root) { root.dataset.glassFallback = 'true'; delete root.dataset.glassReady; }
+      return false;
+    }
+    try {
+      await LiquidGlass.init({ root, glassElements, defaults });
+      root.dataset.glassReady = 'true';
+      delete root.dataset.glassFallback;
+      return true;
+    } catch (error) {
+      root.dataset.glassFallback = 'true';
+      delete root.dataset.glassReady;
+      console.warn('LiquidGlass could not initialize this surface; CSS glass remains active.', error);
+      return false;
+    }
+  };
+
+  (async () => {
+    try {
+      const { LiquidGlass } = await import(cdn);
+      const picker = document.getElementById('projectPicker');
+      const pickerIndicator = picker?.querySelector('.picker-indicator');
+      const heroVisual = document.getElementById('heroVisual');
+      const heroCard = document.getElementById('projectGlassCard');
+      const glasswaveLayout = document.querySelector('.glasswave-layout');
+      const glasswaveIntro = document.querySelector('.glasswave-intro');
+      const musicPlayer = document.querySelector('.music-player');
+      const releasesSection = document.getElementById('releases');
+      const releasePanel = document.querySelector('#releases .release-panel');
+
+      if (pickerIndicator) config(pickerIndicator, {
+        blurAmount: 0.015, refraction: 1.12, chromAberration: 0.035,
+        edgeHighlight: 0.17, specular: 0.16, fresnel: 1, cornerRadius: 18,
+        zRadius: 18, opacity: 0.96, shadowOpacity: 0.14, shadowSpread: 9,
+        shadowOffsetY: 2
+      });
+      if (heroCard) config(heroCard, {
+        blurAmount: 0.025, refraction: 0.95, chromAberration: 0.03,
+        edgeHighlight: 0.19, specular: 0.15, fresnel: 1, cornerRadius: 30,
+        zRadius: 28, opacity: 0.9, shadowOpacity: 0.22, shadowSpread: 18,
+        shadowOffsetY: 8, button: true
+      });
+      if (glasswaveIntro) config(glasswaveIntro, {
+        blurAmount: 0.025, refraction: 0.82, chromAberration: 0.025,
+        edgeHighlight: 0.15, specular: 0.12, fresnel: 1, cornerRadius: 28,
+        zRadius: 26, opacity: 0.9, shadowOpacity: 0.13, shadowSpread: 13
+      });
+      if (musicPlayer) config(musicPlayer, {
+        blurAmount: 0.02, refraction: 0.76, chromAberration: 0.02,
+        edgeHighlight: 0.13, specular: 0.1, fresnel: 1, cornerRadius: 28,
+        zRadius: 26, opacity: 0.92, shadowOpacity: 0.12, shadowSpread: 12
+      });
+      if (releasePanel) config(releasePanel, {
+        blurAmount: 0.02, refraction: 1.08, chromAberration: 0.035,
+        edgeHighlight: 0.19, specular: 0.13, fresnel: 1, cornerRadius: 30,
+        zRadius: 28, opacity: 0.94, shadowOpacity: 0.15, shadowSpread: 15
+      });
+
+      let glasswaveInitPromise = null;
+      let releasesInitPromise = null;
+      const initGlasswaveOnce = () => {
+        if (!glasswaveInitPromise) glasswaveInitPromise = initInstance(LiquidGlass, glasswaveLayout, [glasswaveIntro, musicPlayer], {
+          refraction: 1.14, chromAberration: 0.04, edgeHighlight: 0.2,
+          specular: 0.14, cornerRadius: 28, zRadius: 26, shadowOpacity: 0.14
+        });
+        return glasswaveInitPromise;
+      };
+      const initReleasesOnce = () => {
+        if (!releasesInitPromise) releasesInitPromise = initInstance(LiquidGlass, releasesSection, [releasePanel], {
+          refraction: 1.08, chromAberration: 0.035, edgeHighlight: 0.19,
+          specular: 0.13, cornerRadius: 30, zRadius: 28, shadowOpacity: 0.15
+        });
+        return releasesInitPromise;
+      };
+      document.querySelectorAll('.project-tab').forEach(tab => tab.addEventListener('click', () => {
+        if (tab.dataset.project === 'glasswave') requestAnimationFrame(() => initGlasswaveOnce());
+        if (tab.dataset.project === 'releases') requestAnimationFrame(() => initReleasesOnce());
+      }));
+
+      await initInstance(LiquidGlass, picker, [pickerIndicator], {
+        refraction: 1.05, chromAberration: 0.025, edgeHighlight: 0.14,
+        specular: 0.12, cornerRadius: 18, zRadius: 18, shadowOpacity: 0.12
+      });
+      await initInstance(LiquidGlass, heroVisual, [heroCard], {
+        refraction: 0.9, chromAberration: 0.03, edgeHighlight: 0.17,
+        specular: 0.13, cornerRadius: 30, zRadius: 28, shadowOpacity: 0.2
+      });
+      if (document.querySelector('main')?.dataset.activeProject === 'glasswave') await initGlasswaveOnce();
+      if (document.querySelector('main')?.dataset.activeProject === 'releases') await initReleasesOnce();
+      document.documentElement.dataset.liquidglass = 'ready';
+    } catch (error) {
+      document.documentElement.dataset.liquidglass = 'fallback';
+      ['projectPicker','heroVisual','glasswave','releases'].forEach(id => {
+        const root = document.getElementById(id);
+        if (root) { root.dataset.glassFallback = 'true'; delete root.dataset.glassReady; }
+      });
+      console.warn('LiquidGlass CDN could not be loaded. Keeping the CSS glass fallback.', error);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
